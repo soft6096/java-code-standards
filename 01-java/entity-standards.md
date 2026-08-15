@@ -1,0 +1,114 @@
+# Entity 规范 (Entity Standards)
+
+## 适用范围
+
+生成数据库实体类时加载。定义实体与表映射、字段注解、与 DTO/VO 的边界。
+
+## 强制规则
+
+### 1. 类定位
+
+- Entity 与数据库表一一对应，字段名 = 列名下划线转驼峰
+- ❌ Entity 内放业务逻辑、校验注解、转换方法
+- ❌ Entity 直接返回给前端（接口出参用 VO）
+
+```java
+@TableName("t_order")
+public class Order {
+
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id;
+
+    private Long userId;
+
+    private String orderNo;
+
+    /** 订单状态：见 OrderStatusEnum */
+    private Integer status;
+
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
+
+    @TableLogic
+    private Integer deleted;
+
+    @Version
+    private Integer version;
+}
+```
+
+### 2. 字段注解
+
+| 场景 | 注解 |
+|---|---|
+| 主键策略 | `@TableId(type = IdType.ASSIGN_ID)` 雪花 ID，或 ASSIGN_UUID |
+| 非主表字段 | `@TableField(exist = false)` |
+| 逻辑删除 | `@TableLogic` + 全局配置逻辑值 |
+| 乐观锁 | `@Version` + 乐观锁插件 |
+| 自动填充 | `@TableField(fill = FieldFill.INSERT)` 配合 MetaObjectHandler |
+| 字段名非驼峰 | `@TableField("column_name")` |
+
+- 主键：分布式环境用 `ASSIGN_ID`（雪花），不自增 `AUTO`（分库分表不兼容）
+- 数据库默认值由 MetaObjectHandler 或 DB 默认处理，业务代码不重复赋值
+
+### 3. 类型规范
+
+| 数据库 | Java 类型 |
+|---|---|
+| bigint | Long（主键不用 Integer） |
+| varchar/text | String |
+| decimal | BigDecimal（金额禁用 double/float） |
+| datetime | LocalDateTime（不用 Date） |
+| date | LocalDate |
+| tinyint | Integer（枚举存数值）或 String（少量） |
+| json | String 或 JSON 字段处理器 |
+
+- 时间统一 `LocalDateTime`，时区统一，不存本地字符串
+- 金额统一 `BigDecimal`，精度 scale 与 DB 一致（如 2 位）
+- 状态字段存数值/编码，不存中文
+
+### 4. 字段规则
+
+- 必备字段：`id`、`createTime`、`updateTime`、`deleted`（逻辑删团队统一）
+- 大字段（text/blob）单独拆表或独立字段，不混入高频查询表
+- 字段注释（Javadoc）说明业务含义、取值枚举、单位（如金额单位分）
+
+### 5. 序列化控制
+
+- 大字段不参与序列化时用 `@JsonIgnore`（如内部日志字段）
+- 敏感字段（手机号等）出参脱敏在 VO 层，Entity 不处理
+
+## 反例 / 正例
+
+```java
+// 反例：Entity 塞校验 + 返回前端 + 自增主键
+public class Order {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    @NotBlank(message = "订单号不能为空")   // 校验应放 DTO
+    private String orderNo;
+    private String userId;                  // 类型错：应为 Long
+    private double amount;                  // 金额用 double，精度风险
+    private String createTime;              // 时间用字符串
+}
+```
+
+## 最佳实践
+
+- 主键/时间/逻辑删除字段由插件与 MetaObjectHandler 统一处理，业务代码不手动 set
+- 表名前缀统一（如 t_），`@TableName` 显式声明，不依赖默认命名
+- 字段增减同步改表结构，Entity 与 DDL 保持一一对应
+- 大项目按模块分包：`entity.order`、`entity.user`，不堆一个包
+
+## 自检清单
+
+- [ ] 与表一一对应，字段类型正确
+- [ ] 主键 ASSIGN_ID，非自增
+- [ ] 金额 BigDecimal，时间 LocalDateTime
+- [ ] 逻辑删除 @TableLogic，乐观锁 @Version（需要时）
+- [ ] 无校验注解、无业务逻辑
+- [ ] 必备字段齐（id/createTime/updateTime/deleted）
+- [ ] 字段有注释
