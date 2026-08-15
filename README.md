@@ -23,7 +23,7 @@
 │   ├── controller-standards.md     # Controller
 │   ├── service-standards.md        # Service 接口
 │   ├── service-impl-standards.md   # Service 实现
-│   ├── mapper-standards.md         # MyBatis-Plus Mapper
+│   ├── mapper-standards.md         # Mapper 接口结构（数据访问规则见 database-standards）
 │   ├── entity-standards.md         # 实体类
 │   ├── dto-standards.md            # DTO
 │   ├── vo-standards.md             # VO
@@ -34,13 +34,6 @@
 │   ├── constants-standards.md      # 常量类
 │   ├── converter-standards.md      # MapStruct 转换器
 │   └── validator-standards.md      # 自定义校验器
-│
-├── 02-database/        # 数据库规范
-│   ├── sql-standards.md            # SQL 编写
-│   ├── table-design-standards.md   # 表设计
-│   ├── index-standards.md          # 索引设计
-│   ├── mybatis-xml-standards.md    # MyBatis XML 映射
-│   └── pagination-standards.md     # 分页查询
 │
 ├── 03-performance/     # 性能优化规范
 │   ├── performance-standards.md    # 常见性能问题
@@ -59,9 +52,10 @@
 │   └── ExceptionTemplate.java
 │
 └── 05-examples/        # 完整示例
-    ├── crud-example.md             # CRUD 完整示例
-    └── pagination-example.md       # 分页查询完整示例
+    └── crud-example.md             # CRUD 完整示例
 ```
+
+> **数据库相关规范已迁移至 [database-standards](https://github.com/soft6096/database-standards)**：SQL 编写、表设计、索引、分页、查询反模式、数据安全（通用层）+ MyBatis-Plus Mapper/XML/分页示例（MyBatis-Plus 层）。本 skill 专注 Java 代码规范。
 
 ## 使用方式（AI 加载矩阵）
 
@@ -70,9 +64,9 @@
 | 任意 Java 代码 | 00-common/* | - |
 | 写 Controller | 00-common/* + controller-standards | validator / vo / dto |
 | 写 Service/Impl | 00-common/* + service-* | exception / enum |
-| 写 Mapper/XML | 00-common/* + mapper + mybatis-xml | sql / pagination |
-| 写 Entity | 00-common/* + entity | table-design |
-| 写 SQL/表结构 | sql + table-design + index | pagination |
+| 写 Mapper 接口 | 00-common/* + mapper-standards | database-standards mybatis-plus/mapper |
+| 写 Entity | 00-common/* + entity | database-standards table-design |
+| 写 SQL/表结构/XML/分页 | database-standards（全部） | - |
 | 性能敏感代码 | 00-common/* + performance | concurrency / caching |
 | 生成完整类 | 00-common/* + 对应类规范 + 对应模板 | 对应示例 |
 

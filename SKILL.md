@@ -1,6 +1,6 @@
 ---
 name: java-code-standards
-description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator 等类时按生成目标加载 01-java 对应规范；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 02-database 规范；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、代码规范审查。
+description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator 等类时按生成目标加载 01-java 对应规范；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、代码规范审查。
 ---
 
 # Java Code Standards
@@ -19,13 +19,13 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 写 Controller | `00-common/*` + `01-java/controller-standards.md` | validator / vo / dto |
 | 写 Service 接口 | `00-common/*` + `01-java/service-standards.md` | exception / enum |
 | 写 Service 实现 | `00-common/*` + `01-java/service-impl-standards.md` | exception / enum |
-| 写 Mapper | `00-common/*` + `01-java/mapper-standards.md` | mybatis-xml / sql |
-| 写 Entity | `00-common/*` + `01-java/entity-standards.md` | table-design |
+| 写 Mapper | `00-common/*` + `01-java/mapper-standards.md`（接口结构） | database-standards `mybatis-plus/mapper-standards.md` |
+| 写 Entity | `00-common/*` + `01-java/entity-standards.md` | database-standards `table-design-standards.md` |
 | 写 DTO / VO | `00-common/*` + 对应类规范 | converter |
 | 写 Config / Utils / Enum / Constants 等 | `00-common/*` + 对应类规范 | - |
-| 写 SQL / 建表 DDL | `02-database/sql-standards.md` + `table-design-standards.md` + `index-standards.md` | pagination |
-| 写 MyBatis XML | `02-database/mybatis-xml-standards.md` | sql / pagination |
-| 分页查询 | `02-database/pagination-standards.md` | sql / index |
+| 写 SQL / 建表 DDL | database-standards `sql-standards.md` + `table-design-standards.md` + `index-standards.md` | database-standards `pagination-standards.md` |
+| 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `sql-standards.md` / `pagination-standards.md` |
+| 分页查询 | database-standards `pagination-standards.md` + `mybatis-plus/pagination-example.md` | database-standards `index-standards.md` |
 | 性能敏感代码 | `00-common/*` + `03-performance/performance-standards.md` | concurrency / caching |
 | 并发 / 锁 | `03-performance/concurrency-standards.md` | - |
 | 缓存 (Redis/Caffeine) | `03-performance/caching-standards.md` | - |
@@ -57,9 +57,8 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - 并发写用乐观锁（`@Version`）或行锁，禁止无锁覆盖
 
 ### 数据访问
-- 单表简单条件用 LambdaQueryWrapper；复杂 SQL 进 XML
-- 分页用 MyBatis-Plus `Page`，深分页改键集分页（`AND id < #{lastId}`）
-- 禁止 `SELECT *`、`${}` 拼接值（SQL 注入）；排序字段白名单校验
+- SQL/表设计/索引/分页/MyBatis XML 规范见 **database-standards** skill，本 skill 只覆盖 Java 侧（Mapper 接口结构）
+- Mapper 接口：继承 `BaseMapper`，方法命名 select/insert/update/delete 前缀，多参数 `@Param`，禁 Map 返回
 - 批量操作 foreach 500~1000 一批，禁止循环单条
 
 ### 性能（03-performance/*）
