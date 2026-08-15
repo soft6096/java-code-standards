@@ -55,6 +55,21 @@ public class OrderCreateDTO {
 - 文档开关配置化：dev 环境开启，prod 按需关闭（防接口信息泄露）
 - 离线文档导出（knife4j 导出 markdown/openapi json）进版本管理，随接口变更同步
 
+### 5. API 版本化
+
+- 接口演进统一版本策略，禁止破坏性变更直接改老接口
+
+| 方案 | 实现 | 适用 |
+|---|---|---|
+| URL 版本（推荐） | `/api/v1/orders`、`/api/v2/orders` | 对外 API，简单直观 |
+| Header 版本 | `Accept: application/vnd.xx.v2+json` | 内部服务，路径稳定 |
+
+- 团队选一，禁止混用
+- 破坏性变更（字段改名/删除、语义变化、响应结构变化）→ 必须升版本，不静默改老接口
+- 兼容性变更（加可选字段、加接口）→ 不升版本，老版本继续可用
+- 老版本下线：提前公告 + 过渡期（建议 ≥ 6 个月），明确下线时间
+- Controller 映射带版本：`@RequestMapping("/api/v1/orders")`，新版复制改 v2，不原地改
+
 ## 自检清单
 
 - [ ] 类/方法/字段有 OpenAPI 注解
@@ -62,3 +77,4 @@ public class OrderCreateDTO {
 - [ ] 注解与校验一致
 - [ ] 示例无敏感数据
 - [ ] 文档开关按环境配置
+- [ ] 破坏性变更已升版本，无静默改老接口

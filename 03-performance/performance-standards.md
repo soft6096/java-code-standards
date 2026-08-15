@@ -85,6 +85,27 @@ CompletableFuture.allOf(fa, fb).join();
 - 优化前先测量（Arthas/JFR/APM），不凭感觉优化
 - 每轮优化一个点，压测验证再动下一处
 
+### 7. 监控指标（Micrometer/Prometheus）
+
+- 关键业务埋点：接口请求量/延迟（内置自动）、核心业务流程计数（订单创建数）、错误率
+- 自定义指标用 Micrometer（`@Timed` / `Counter` / `Gauge`），统一命名规范
+
+```java
+// 正例：业务指标 + tag
+@Timed(name = "order.create", description = "订单创建耗时")
+public OrderVO create(OrderCreateDTO dto) { ... }
+
+// 计数器
+private final Counter orderCreateCounter = Metrics.counter("order.create.count",
+        "biz", "order");
+orderCreateCounter.increment();
+```
+
+- 指标命名：`模块.操作.类型`（`order.create.count`、`payment.timeout.total`），小写点分
+- tag 有界：用固定枚举值（状态/类型），禁高基数 tag（用户 ID、订单号 → 指标爆炸）
+- 指标只埋业务关键点，不每个方法都埋（采集成本 + 噪音）
+- 告警阈值配置化（Prometheus rule），不硬编码在代码
+
 ## 反例 / 正例
 
 ```java
@@ -107,3 +128,6 @@ for (Long id : ids) {
 - [ ] 批量写分批，事务大小受控
 - [ ] 耗时独立操作异步化
 - [ ] 优化前有测量基线
+- [ ] 业务关键点有指标埋点，命名规范
+- [ ] 无高基数 tag（用户 ID/订单号）
+- [ ] 告警阈值配置化

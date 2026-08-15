@@ -132,6 +132,29 @@ try {
 - 异步线程内异常必须捕获记录，否则静默丢失
 - 第三方调用失败区分「可重试」与「不可重试」，可重试错误带重试策略
 
+### 错误码分段管理
+
+错误码统一字符串编码，分段设计，防撞号 + 快速定位：
+
+| 段位 | 格式 | 示例 | 归属 |
+|---|---|---|---|
+| 通用段 | `COMMON_xxx` | `COMMON_PARAM_ERROR`、`COMMON_SYSTEM_ERROR` | 全局（参数/鉴权/系统） |
+| 模块段 | `模块_xxx` | `ORDER_NOT_FOUND`、`ORDER_STATUS_INVALID`、`PAY_BALANCE_INSUFFICIENT` | 各业务模块 |
+
+- 错误码集中定义：通用段在全局常量/枚举类，模块段在模块内枚举类（`OrderErrorCode`、`PayErrorCode`）
+- 编码规则：模块前缀 + 语义（`ORDER_` + `NOT_FOUND`），禁止裸数字（`10001` 不可读）
+- 错误码唯一性：新码先查重，禁止不同异常共用同码
+- 错误码进文档（接口文档错误码表），前端按码处理（不解析 message）
+
+```java
+// 正例：模块内枚举
+public enum OrderErrorCode {
+    ORDER_NOT_FOUND("ORDER_NOT_FOUND", "订单不存在或已删除"),
+    ORDER_STATUS_INVALID("ORDER_STATUS_INVALID", "订单状态不允许该操作");
+    ...
+}
+```
+
 ## 性能优化建议
 
 - 异常对象构造昂贵（堆栈填充）。高频路径禁止用异常做控制流
@@ -140,6 +163,8 @@ try {
 ## 自检清单
 
 - [ ] 所有抛出使用自定义异常，带错误码
+- [ ] 错误码分段（COMMON_/模块_），无裸数字
+- [ ] 错误码集中定义 + 查重，无同码复用
 - [ ] 无裸 `RuntimeException` 抛业务错误
 - [ ] 无空 catch
 - [ ] 资源使用 try-with-resources
