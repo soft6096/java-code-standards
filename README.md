@@ -14,10 +14,10 @@
 ```
 ├── 00-common/          # 通用规范（生成任何代码前加载）
 │   ├── 01-naming-standards.md      # 命名规范
-│   ├── 02-comment-standards.md     # 注释规范
 │   ├── 03-exception-standards.md   # 异常处理规范
 │   ├── 04-logging-standards.md     # 日志规范
 │   └── 05-code-format-standards.md # 代码格式规范
+│   （注释规范已独立 → comment-standards skill）
 │
 ├── 01-java/            # 各类 Java 类规范（按生成目标加载）
 │   ├── controller-standards.md     # Controller
@@ -61,7 +61,7 @@
 
 | 任务类型 | 必加载 | 建议加载 |
 |---|---|---|
-| 任意 Java 代码 | 00-common/* | - |
+| 任意 Java 代码 | 00-common/* + comment-standards | - |
 | 写 Controller | 00-common/* + controller-standards | validator / vo / dto |
 | 写 Service/Impl | 00-common/* + service-* | exception / enum |
 | 写 Mapper 接口 | 00-common/* + mapper-standards | database-standards mybatis-plus/mapper |

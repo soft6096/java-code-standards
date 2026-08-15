@@ -1,0 +1,10 @@
+# Java 开发常见陷阱
+
+.DS_Store
+*.iml
+.idea/
+target/
+*.class
+
+# 本地生成文件（不入库）
+skill-overview.html

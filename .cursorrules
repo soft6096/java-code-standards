@@ -1,0 +1,56 @@
+# Java Code Standards Skill — Cursor 索引
+
+本目录为 Java 代码规范集。生成 Java 代码前，按「任务类型 → 加载矩阵」选择规范文件并遵循其规则。
+
+## 索引
+
+### 00-common/ — 通用规范（生成任何代码必加载）
+- 01-naming-standards.md — 类/方法/变量命名
+- 02-comment-standards.md — Javadoc/行内注释
+- 03-exception-standards.md — 异常体系/处理原则
+- 04-logging-standards.md — 日志级别/格式
+- 05-code-format-standards.md — 缩进/换行/空行
+
+### 01-java/ — 类规范（按生成目标加载）
+- controller-standards.md — RESTful API/参数校验
+- service-standards.md — 业务接口
+- service-impl-standards.md — 业务实现/事务
+- mapper-standards.md — MyBatis-Plus Mapper
+- entity-standards.md — 实体类
+- dto-standards.md — 数据传输对象
+- vo-standards.md — 视图对象
+- config-standards.md — 配置类
+- utils-standards.md — 工具类
+- exception-standards.md — 自定义异常
+- enum-standards.md — 枚举类
+- constants-standards.md — 常量类
+- converter-standards.md — MapStruct 转换器
+- validator-standards.md — 自定义校验器
+
+### 02-database/ — 数据库规范
+- sql-standards.md — SQL 语法/性能
+- table-design-standards.md — 表结构/字段类型
+- index-standards.md — 索引设计
+- mybatis-xml-standards.md — XML 映射文件
+- pagination-standards.md — 分页实现
+
+### 03-performance/ — 性能规范
+- performance-standards.md — 常见性能问题
+- concurrency-standards.md — 线程安全/锁
+- caching-standards.md — Redis/本地缓存
+
+### 04-templates/ — 代码模板
+Controller/Service/ServiceImpl/Mapper/Entity/Dto/Vo/Config/Exception 模板
+
+### 05-examples/ — 完整示例
+- crud-example.md
+- pagination-example.md
+
+## 使用规则
+
+1. 生成任意 Java 代码 → 先读 00-common/ 全部 5 份
+2. 生成特定类 → 再读 01-java/ 对应文件
+3. 涉及 SQL/表 → 加读 02-database/ 对应文件
+4. 性能敏感 → 加读 03-performance/ 对应文件
+5. 生成完整类 → 参考 04-templates/ 对应模板
+6. 生成后对照规范「自检清单」逐项核对
