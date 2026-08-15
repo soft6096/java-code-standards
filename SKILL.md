@@ -1,6 +1,6 @@
 ---
 name: java-code-standards
-description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；写测试代码时加载 test-standards skill；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查。
+description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；写测试代码时加载 test-standards skill；构建配置（pom/依赖/模块）时加载 build-standards skill；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查。
 ---
 
 # Java Code Standards
@@ -28,6 +28,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 写 Job（定时任务） | `01-java/job-standards.md` | concurrency |
 | 接口文档（OpenAPI/knife4j） | `01-java/api-doc-standards.md` | controller-standards |
 | 分布式（锁/幂等/事务） | `01-java/distributed-standards.md` | concurrency / caching |
+| 写 pom / 加依赖 / 模块结构 | build-standards（全部） | - |
 | 写测试代码 | test-standards `unit-test-standards.md` + `contract-test-standards.md` | test-standards `test-data-standards.md` |
 | 写 SQL / 建表 DDL | database-standards `sql-standards.md` + `table-design-standards.md` + `index-standards.md` | database-standards `pagination-standards.md` |
 | 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `sql-standards.md` / `pagination-standards.md` |
