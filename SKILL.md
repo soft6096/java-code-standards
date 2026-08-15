@@ -1,6 +1,6 @@
 ---
 name: java-code-standards
-description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator 等类时按生成目标加载 01-java 对应规范；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、代码规范审查。
+description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、代码规范审查。
 ---
 
 # Java Code Standards
@@ -15,7 +15,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 
 | 任务类型 | 必读 | 建议读 |
 |---|---|---|
-| 任意 Java 代码 | `00-common/*`（5 份全部） | - |
+| 任意 Java 代码 | `00-common/*`（4 份）+ comment-standards `comment-standards.md` | - |
 | 写 Controller | `00-common/*` + `01-java/controller-standards.md` | validator / vo / dto |
 | 写 Service 接口 | `00-common/*` + `01-java/service-standards.md` | exception / enum |
 | 写 Service 实现 | `00-common/*` + `01-java/service-impl-standards.md` | exception / enum |
@@ -50,6 +50,11 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - SLF4J 占位符 `{}`，禁止字符串拼接与 System.out
 - 异常日志带堆栈（最后参数传异常对象）
 - 关键日志带业务上下文 ID，禁敏感信息
+
+### 注释（见 comment-standards skill）
+- 公开 API 必须 Javadoc，@param/@return 写业务含义（禁止只重复参数名）
+- getter/setter 禁注释；行内注释解释「为什么」，复杂逻辑写 `// WHY:`
+- 禁止翻译代码式注释，注释与代码一致，宁缺毋滥
 
 ### Service 实现（service-impl-standards.md）
 - 构造器注入（`@RequiredArgsConstructor` + final 字段），禁止字段注入
