@@ -33,7 +33,12 @@
 │   ├── enum-standards.md           # 枚举类
 │   ├── constants-standards.md      # 常量类
 │   ├── converter-standards.md      # MapStruct 转换器
-│   └── validator-standards.md      # 自定义校验器
+│   ├── validator-standards.md      # 自定义校验器
+│   ├── security-standards.md       # 认证鉴权与安全防护
+│   ├── listener-standards.md       # MQ 消息消费
+│   ├── job-standards.md            # 定时任务
+│   ├── api-doc-standards.md        # 接口文档（OpenAPI/knife4j）
+│   └── distributed-standards.md    # 分布式（锁/幂等/事务）
 │
 ├── 03-performance/     # 性能优化规范
 │   ├── performance-standards.md    # 常见性能问题
@@ -66,6 +71,11 @@
 | 写 Service/Impl | 00-common/* + service-* | exception / enum |
 | 写 Mapper 接口 | 00-common/* + mapper-standards | database-standards mybatis-plus/mapper |
 | 写 Entity | 00-common/* + entity | database-standards table-design |
+| 认证鉴权/安全 | security-standards | - |
+| 写 Listener/Job | listener-standards / job-standards | - |
+| 接口文档 | api-doc-standards | - |
+| 分布式场景 | distributed-standards | concurrency / caching |
+| 写测试代码 | test-standards（全部） | - |
 | 写 SQL/表结构/XML/分页 | database-standards（全部） | - |
 | 性能敏感代码 | 00-common/* + performance | concurrency / caching |
 | 生成完整类 | 00-common/* + 对应类规范 + 对应模板 | 对应示例 |

@@ -1,6 +1,6 @@
 ---
 name: java-code-standards
-description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、代码规范审查。
+description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；写测试代码时加载 test-standards skill；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查。
 ---
 
 # Java Code Standards
@@ -23,6 +23,12 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 写 Entity | `00-common/*` + `01-java/entity-standards.md` | database-standards `table-design-standards.md` |
 | 写 DTO / VO | `00-common/*` + 对应类规范 | converter |
 | 写 Config / Utils / Enum / Constants 等 | `00-common/*` + 对应类规范 | - |
+| 认证鉴权 / 安全 | `01-java/security-standards.md` | controller-standards |
+| 写 Listener（MQ 消费） | `01-java/listener-standards.md` | database-standards `pagination-standards.md` |
+| 写 Job（定时任务） | `01-java/job-standards.md` | concurrency |
+| 接口文档（OpenAPI/knife4j） | `01-java/api-doc-standards.md` | controller-standards |
+| 分布式（锁/幂等/事务） | `01-java/distributed-standards.md` | concurrency / caching |
+| 写测试代码 | test-standards `unit-test-standards.md` + `contract-test-standards.md` | test-standards `test-data-standards.md` |
 | 写 SQL / 建表 DDL | database-standards `sql-standards.md` + `table-design-standards.md` + `index-standards.md` | database-standards `pagination-standards.md` |
 | 写 MyBatis XML | database-standards `mybatis-plus/mybatis-xml-standards.md` | database-standards `sql-standards.md` / `pagination-standards.md` |
 | 分页查询 | database-standards `pagination-standards.md` + `mybatis-plus/pagination-example.md` | database-standards `index-standards.md` |
@@ -65,6 +71,19 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - SQL/表设计/索引/分页/MyBatis XML 规范见 **database-standards** skill，本 skill 只覆盖 Java 侧（Mapper 接口结构）
 - Mapper 接口：继承 `BaseMapper`，方法命名 select/insert/update/delete 前缀，多参数 `@Param`，禁 Map 返回
 - 批量操作 foreach 500~1000 一批，禁止循环单条
+
+### 安全（security-standards.md）
+- 接口权限注解 + 资源归属校验（防 IDOR）；SQL 全参数化
+- 密码慢哈希、密钥无硬编码；文件上传白名单 + 大小 + 重命名
+- 敏感字段脱敏，不进日志/响应
+
+### 分布式（distributed-standards.md）
+- 分布式锁 SETNX + 过期 + 原子释放；写接口幂等（唯一键/状态位）
+- 跨服务调用有超时 + 重试退避 + 熔断；分布式事务多数用最终一致
+
+### 测试（见 test-standards skill）
+- 测试是验收标准：禁改断言/删测试；契约测试覆盖三态（合法/非法/边界）
+- 单测 AAA + 全 mock；数据工厂化；复杂 SQL 用 Testcontainers
 
 ### 性能（03-performance/*）
 - 禁止 N+1：批量查询后内存映射
