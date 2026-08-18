@@ -40,7 +40,7 @@ public class OrderController {
 
 - 路径全小写，复数名词，禁动词：`/api/orders` 非 `/api/getOrders`
 - **多词路径用连字符（kebab-case）**：`/api/current-user-info` 非 `/api/currentUserInfo` 非 `/api/currentuserinfo`
-- **禁止直译缩写/无语义单词路径**：`/me`（反例，me 无业务语义）→ `/current-user-info`
+- **团队约定：弃用缩写惯例（如 REST 生态的 `/me`），统一业务语义路径**：`/me`（反例）→ `/current-user-info`
 - 嵌套资源：`/api/users/{userId}/orders`
 - 幂等语义：GET/PUT/DELETE 幂等；POST 不幂等
 - **Controller 方法名与路径对应业务语义**（呼应命名规范反直译）：
@@ -134,7 +134,7 @@ public Result<OrderVO> getById(@PathVariable Long id) {
 ## 自检清单
 
 - [ ] 只做参数接收 + Service 调用 + 返回
-- [ ] RESTful 路径规范（kebab-case 连字符、禁直译缩写如 /me）
+- [ ] RESTful 路径规范（kebab-case 连字符、弃用 /me 类缩写惯例）
 - [ ] 方法名业务语义（动词前缀 + 领域术语，无 me/info 类直译）
 - [ ] 入参 @Validated + 校验注解
 - [ ] 统一 Result 返回
