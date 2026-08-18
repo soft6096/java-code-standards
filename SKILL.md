@@ -23,6 +23,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 写 Entity | `00-common/*` + `01-java/entity-standards.md` | database-standards `table-design-standards.md` |
 | 写 DTO / VO | `00-common/*` + 对应类规范 | converter |
 | 写 Config / Utils / Enum / Constants 等 | `00-common/*` + 对应类规范 | - |
+| 写 application.yml / 配置文件 / 连接池 | `01-java/application-config-standards.md` | config-standards |
 | 认证鉴权 / 安全 | `01-java/security-standards.md` | controller-standards |
 | 写 Listener（MQ 消费） | `01-java/listener-standards.md` | database-standards `pagination-standards.md` |
 | 写 Job（定时任务） | `01-java/job-standards.md` | concurrency |

@@ -28,6 +28,7 @@
 │   ├── dto-standards.md            # DTO
 │   ├── vo-standards.md             # VO
 │   ├── config-standards.md         # 配置类
+│   ├── application-config-standards.md  # 配置文件（application.yml：多环境 profile/逐项注释/连接池/Redis 池/MQ）
 │   ├── utils-standards.md          # 工具类
 │   ├── exception-standards.md      # 自定义异常
 │   ├── enum-standards.md           # 枚举类
