@@ -11,6 +11,16 @@
 - 全部小写，单词间无分隔符
 - 反例：`com.Company.Order` / `com.company_name`
 - 正例：`com.example.hotel.order`
+- **DTO / VO 独立包，禁止挂在 controller 包下**：
+
+| 层 | 包 | 说明 |
+|---|---|---|
+| Controller | `com.example.order.controller` | 接口层 |
+| 请求/出参对象 | `com.example.order.dto` / `com.example.order.vo` | 与 controller **平级** |
+| 实体 | `com.example.order.domain` | 数据库实体 |
+
+- 反例：`com.example.order.controller.vo.MeVO`、`com.example.order.controller.dto.LoginDTO`
+- 正例：`com.example.order.vo.CurrentUserInfoVO`、`com.example.order.dto.LoginDTO`
 
 ### 2. 类名 / 接口名
 
@@ -19,6 +29,20 @@
 - 接口不加 `I` 前缀（除历史遗留），实现类加 `Impl` 后缀
 - 反例：`userService`、`getUserData`、`IUserService`
 - 正例：`UserService`（接口）、`UserServiceImpl`（实现）、`OrderController`
+- **类名表达业务语义，禁止中文直译/无领域含义缩写**：
+
+```java
+// 反例：中文直译（Me = 我）→ 无业务语义
+public class MeVO { ... }
+public class GetInfoDTO { ... }
+
+// 正例：业务语义命名（当前用户信息）
+public class CurrentUserInfoVO { ... }
+```
+
+- DTO/VO 类名 = 「领域概念 + 后缀」：`CurrentUserInfoVO`、`OrderQueryDTO`、`RoleAssignDTO`
+- 禁止：`MeVO`（Me 无领域概念）、`InfoDTO`（Info 无领域概念）、`UserInfoDTO`（Info 冗余，若语义就是用户信息则 `UserDTO` 或 `UserVO`）
+- 判据：类名去掉后缀（VO/DTO）后，剩余部分必须是**领域术语**（CurrentUserInfo / OrderQuery / RoleAssign），能独立表达业务概念
 
 ### 3. 方法名
 
@@ -64,7 +88,10 @@ OrderVO targetOrderVO;   // 目标
 
 - 单变量 VO 可用「领域词 + 层后缀」：`OrderVO orderVO`（区别于 Entity `order`）
 - 基础类型直接语义命名：`String name`、`List<Long> orderIds`、`Map<Long, Order> orderMap`
-- 集合变量用类型复数：`List<OrderVO> orderVOs`
+- **集合字段命名二选一，团队统一，禁止混用**：
+  - 方案 A（Java 惯例，推荐）：**复数语义名**，`List<Long> permissionIds`、`List<OrderVO> orderVOs`
+  - 方案 B（团队约定）：**`xxxList` 后缀**，`List<Long> permissionIdList`、`List<OrderVO> orderVOList`
+  - **语义名豁免**：非"列表"语义的集合用业务名，`List<PermissionTreeVO> menuTree`（它是树结构，不是列表集合，改成 menuTreeList 反而丢语义）
 - 避免拼音、单字母（循环变量 `i/j/k` 除外）
 - 反例：`OrderVO vo`、`OrderUpdateDTO dto`、`String s`、`int shuliang`
 - 正例：`OrderVO orderVO`、`OrderQueryDTO orderQuery`、`String name`、`int quantity`
@@ -121,10 +148,12 @@ public class UserInfoController {
 
 ## 自检清单
 
-- [ ] 包名全小写
+- [ ] 包名全小写；DTO/VO 独立包（不在 controller 包下）
 - [ ] 类 UpperCamelCase，接口无 `I` 前缀，实现带 `Impl`
+- [ ] 类名业务语义（去后缀后是领域术语），无中文直译（MeVO 类反例）
 - [ ] 方法 lowerCamelCase，动词开头，分层前缀正确
 - [ ] 变量 lowerCamelCase，无语义不明缩写
+- [ ] 集合命名团队统一（复数语义 或 xxxList，不混用；语义名豁免）
 - [ ] 常量全大写 + 下划线
 - [ ] DTO/VO/Entity 后缀正确
 - [ ] 无拼音命名
