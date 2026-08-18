@@ -12,13 +12,27 @@
 
 | 文件 | 环境 | 内容 |
 |------|------|------|
-| `application.yml` | 公共 | 公共配置 + `spring.profiles.active`（默认 dev） |
+| `application.yml` | 公共 | 公共配置 + profile 激活（**不写死环境**，见下） |
 | `application-dev.yml` | 开发 | 本地连接（本机 MySQL/Redis） |
 | `application-test.yml` | 测试 | 测试库连接（CI/契约测试用，数据可重建） |
 | `application-online.yml` | 生产 | 上线环境（敏感值用环境变量占位符，不写死） |
 
+**profile 激活方式**（禁止写死具体环境）：
+
+```yaml
+# application.yml —— 默认 dev，生产/测试显式注入，不写死 test/online
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+```
+
+- 禁止 `active: test` / `active: online` 写死（生产忘指定 profile 会连错库）
+- 契约测试：测试类加 `@ActiveProfiles("test")` **显式隔离**，不依赖默认值
+- 生产：部署环境注入 `SPRING_PROFILES_ACTIVE=online`（漏设启动连 dev 库，由部署校验兜底）
+- 本地开发：默认 dev 即可，或 `--spring.profiles.active=dev`
+
 - 禁止把环境差异写在代码里（if dev / if prod 分支），一律走 profile 文件
-- dev/test 允许写死本地凭据；**online 禁止写死密码/密钥**，用 `${ENV_VAR:默认值}` 占位
+- dev/test 允许写死本地凭据；**online 禁止写死密码/密钥**，用 `${ENV_VAR:默认值}` 占位（敏感项无默认值，缺变量启动失败）
 - 环境相关公共项（如 `mybatis-plus`、`jackson`）放 `application.yml`，环境差异项放各 profile 文件
 
 ### 2. 配置项逐条注释（要知道配的是什么）
