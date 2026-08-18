@@ -46,14 +46,33 @@ public class OrderController {
 - **Controller 方法名与路径对应业务语义**（呼应命名规范反直译）：
 
 ```java
-// 反例：直译缩写
+// 反例：直译缩写 / 泛化方法名
 @GetMapping("/me")
 public Result<MeVO> me() { ... }
 
-// 正例：动词前缀 + 业务语义
+@GetMapping("/role/list")
+public Result<PageResult<RoleVO>> list(RoleQueryDTO query) { ... }
+
+// 正例：动词前缀 + 业务语义 + 语义化路径变量与参数名
 @GetMapping("/current-user-info")
 public Result<CurrentUserInfoVO> getCurrentUserInfo() { ... }
+
+@GetMapping("/role/list")
+public Result<PageResult<RoleVO>> queryRoleList(RoleQueryDTO roleQueryDTO) { ... }
+
+@PostMapping("/role")
+public Result<RoleVO> saveRole(@Valid @RequestBody RoleSaveDTO roleSaveDTO) { ... }
+
+@PutMapping("/role")
+public Result<Void> updateRole(@Valid @RequestBody RoleEditDTO roleEditDTO) { ... }
+
+@DeleteMapping("/role/{roleId}")
+public Result<Void> deleteRole(@PathVariable Long roleId) { ... }
 ```
+
+- **方法名禁止泛化**：`list` / `create` / `update` / `delete` / `tree`（无业务对象）→ `queryRoleList` / `saveRole` / `updateRole` / `deleteRole` / `getPermissionTreeList`
+- **路径变量语义化**：`{id}` → `{roleId}` / `{userId}`（带领域前缀）
+- **返回集合资源的路径加 `-list`**：`GET /permission/tree` → `GET /permission/tree-list`（与返回 List 方法名 xxxList 一致）
 
 ### 3. 参数校验
 

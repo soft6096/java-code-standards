@@ -27,8 +27,9 @@
 - UpperCamelCase（帕斯卡命名）
 - 名词或名词短语，避免动词开头
 - 接口不加 `I` 前缀（除历史遗留），实现类加 `Impl` 后缀
-- 反例：`userService`、`getUserData`、`IUserService`
-- 正例：`UserService`（接口）、`UserServiceImpl`（实现）、`OrderController`
+- 反例：`userService`、`getUserData`、`IUserService`、`class A`、`class XxxUtil` 中的 `Util`（无业务含义，用 `XxxSupport`/`XxxHelper` 或并入领域类）
+- 正例：`UserService`（接口）、`UserServiceImpl`（实现）、`OrderController`、`RoleService`
+- **禁止单字母类名**（`class A` / `class B` / `interface I` 均反例）
 - **类名表达业务语义，禁止中文直译/无领域含义缩写**：
 
 ```java
@@ -53,20 +54,30 @@ public class CurrentUserInfoVO { ... }
   - Service：`query/save/modify/remove` 或领域动词，如 `queryPage`、`submitOrder`
   - Mapper：`select/insert/update/delete` 前缀，如 `selectList`、`insertBatch`
 - 布尔返回方法：`is/has/can/should` 前缀，如 `isValid`、`hasPermission`
-- 反例：`handleData`、`doStuff`、`getOrderInfoByIdAndStatus`
+- **禁止单字母方法名**（`void a()` / `int b()` 反例）
+- 反例：`handleData`、`doStuff`、`getOrderInfoByIdAndStatus`、`void run()`（无业务语义）
 
 ### 4. 变量名
 
 - lowerCamelCase，表达**语义角色**，见名知意
 - **禁止无意义简写**：`dto` / `vo` / `query` / `result` / `info` 单独作变量名（作用域 ≤ 5 行可豁免）
+- **禁止单字母变量名**（整数索引循环变量 `i/j/k` 除外）：`e` / `p` / `s` / `d` 均为反例
 
 ```java
-// 反例：无信息量
+// 反例：单字母 / 无信息量
 OrderVO vo;
 OrderCreateDTO dto;
+for (SysPermission p : permissionList) { ... }
+catch (Exception e) { ... }          // e → exception 或业务语义名
+
+// 正例
+OrderVO orderVO;
+OrderCreateDTO orderCreateDTO;
+for (SysPermission sysPermission : sysPermissionList) { ... }
+catch (Exception exception) { ... }
 ```
 
-- **方法参数按角色命名**（领域词 + 角色词，不机械重复完整类型名）：
+- **方法参数按角色命名（领域词 + 角色词，不机械重复完整类型名）**：
 
 ```java
 public PageResult<OrderVO> queryPage(OrderQueryDTO orderQuery) { ... }   // 查询条件
@@ -74,6 +85,9 @@ public Long create(OrderCreateDTO createInfo) { ... }                    // 创�
 public void update(Long id, OrderUpdateDTO updateInfo) { ... }           // 更新参数
 public void cancelOrder(CancelOrderDTO cancelInfo) { ... }               // 取消参数
 ```
+
+- **参数名默认 = 类型名小驼峰**（省略泛称歧义时）：`RoleSaveDTO roleSaveDTO`、`BindException bindException`、`HttpServletResponse httpServletResponse`；有多个同类参数再加角色前缀（`sourceOrderVO` / `targetOrderVO`）
+- **禁止泛称参数名**：`e` / `dto` / `query` / `response` / `req`（反例）→ `exception` / `roleQueryDTO` / `httpServletResponse`
 
 - **多个同类型变量并存时，加语义限定前缀区分**（谁是谁、用途）
 
@@ -88,18 +102,29 @@ OrderVO targetOrderVO;   // 目标
 
 - 单变量 VO 可用「领域词 + 层后缀」：`OrderVO orderVO`（区别于 Entity `order`）
 - 基础类型直接语义命名：`String name`、`Map<Long, Order> orderMap`
-- **集合字段命名：统一 `xxxList` 后缀（方案 B，团队唯一约定，禁止复数命名）**：
+- **集合字段/局部变量命名：统一 `xxxList` / `xxxSet` / `xxxMap` 后缀（按元素类型），禁止复数命名**：
 
 ```java
-List<Long> permissionIdList;          // ✅ 一眼看出是 List
+List<Long> permissionIdList;          // ✅ List → xxxList
+Set<String> codeSet;                  // ✅ Set → xxxSet
+Map<Long, Order> orderMap;            // ✅ Map → xxxMap
 List<OrderVO> orderVOList;            // ✅ 统一 xxxList
 List<Long> permissionIds;             // ❌ 复数命名（与团队约定冲突）
+Set<String> codes;                    // ❌ 应 codeSet
+```
+
+- **返回集合的方法名同样以类型后缀结尾**：
+
+```java
+List<PermissionTreeVO> getPermissionTreeList();   // ✅ 返回 List → 方法名 xxxList 结尾
+Set<String> resolvePermCodeSet(Long userId);      // ✅ 返回 Set → xxxSet 结尾
+List<PermissionTreeVO> getPermissionTree();       // ❌ 未带 List 后缀
 ```
 
 - **语义名豁免**：非"列表"语义的集合用业务名，`List<PermissionTreeVO> menuTree`（树结构不是列表集合，保持语义名）；判定：元素关系是「平级列表」→ xxxList；是「树/图/层级结构」→ 语义名
 - 避免拼音、单字母（循环变量 `i/j/k` 除外）
-- 反例：`OrderVO vo`、`OrderUpdateDTO dto`、`String s`、`int shuliang`、`List<Long> roleIds`
-- 正例：`OrderVO orderVO`、`OrderQueryDTO orderQuery`、`String name`、`int quantity`、`List<Long> roleIdList`
+- 反例：`OrderVO vo`、`OrderUpdateDTO dto`、`String s`、`int shuliang`、`List<Long> roleIds`、`for (SysPermission p : ...)`
+- 正例：`OrderVO orderVO`、`OrderQueryDTO orderQuery`、`String name`、`int quantity`、`List<Long> roleIdList`、`for (SysPermission sysPermission : sysPermissionList)`
 
 ### 5. 常量名
 
@@ -118,7 +143,23 @@ List<Long> permissionIds;             // ❌ 复数命名（与团队约定冲�
 | 业务接口 | Service | `OrderService` |
 | 实现 | ServiceImpl | `OrderServiceImpl` |
 
-### 7. 缩写规则
+### 8. 接口方法修饰词（Service/Mapper 接口）
+
+- **接口方法不写访问修饰词**（隐式 `public abstract`，Java 惯例，写 `public` 是冗余）
+- 反例：`public Result<Void> updateRole(...)`（接口内）
+- 正例：
+
+```java
+public interface RoleService {
+    PageResult<RoleVO> queryRoleList(RoleQueryDTO roleQueryDTO);   // 无 public
+    void updateRole(RoleEditDTO roleEditDTO);
+}
+```
+
+- 实现类方法写 `public`（类方法必须有访问修饰词）
+- `default` 仅接口默认方法使用；`private` 仅 Java 9+ 接口私有方法使用
+
+### 9. 缩写规则
 
 - 缩写视为单词：`getUserId` 而非 `getUserID`
 - 类名中：`UserIdDTO` 而非 `UserIDDTO`
@@ -157,8 +198,11 @@ public class UserInfoController {
 - [ ] 类 UpperCamelCase，接口无 `I` 前缀，实现带 `Impl`
 - [ ] 类名业务语义（去后缀后是领域术语），无中文直译（MeVO 类反例）
 - [ ] 方法 lowerCamelCase，动词开头，分层前缀正确
-- [ ] 变量 lowerCamelCase，无语义不明缩写
-- [ ] 集合命名统一 `xxxList` 后缀（树/层级结构豁免语义名）
+- [ ] 变量 lowerCamelCase，无语义不明缩写；无单字母变量（循环 i/j/k 除外）
+- [ ] 参数名 = 类型小驼峰或角色语义名（无 e/dto/query/response 泛称）
+- [ ] 集合命名统一 `xxxList` / `xxxSet` / `xxxMap` 后缀（树/层级结构豁免语义名）
+- [ ] 返回集合的方法名以 xxxList/xxxSet/xxxMap 结尾
+- [ ] 接口方法无 public 修饰词
 - [ ] 常量全大写 + 下划线
 - [ ] DTO/VO/Entity 后缀正确
 - [ ] 无拼音命名

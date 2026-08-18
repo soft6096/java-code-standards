@@ -15,6 +15,9 @@
 ### 2. 方法设计
 
 - 方法名用业务动词：`submitOrder`、`cancelOrder`、`queryPage`，不用 `doXxx`、`handleXxx`
+- **接口方法不写访问修饰词**（隐式 public，见命名规范 §8）：`PageResult<RoleVO> queryRoleList(...)`，禁止 `public PageResult<RoleVO> ...`
+- **参数名 = 类型小驼峰或角色语义名**：`RoleSaveDTO roleSaveDTO`，禁止 `dto` / `query` / `e` 泛称
+- **返回集合的方法名以类型后缀结尾**：`getPermissionTreeList()`（返回 List）、`resolvePermCodeSet()`（返回 Set）
 - 参数用 DTO 聚合，避免长参数列表（> 3 个包装为 DTO）
 
 ```java
@@ -22,8 +25,8 @@
 OrderVO query(Long userId, String status, Integer pageNum, Integer pageSize,
               String startTime, String endTime, Long shopId);
 
-// 正例
-PageResult<OrderVO> queryPage(OrderQueryDTO orderQuery);
+// 正例（无 public、参数语义名）
+PageResult<OrderVO> queryOrderPage(OrderQueryDTO orderQueryDTO);
 ```
 
 - 返回类型面向调用方：列表返回 `List<VO>` 或 `PageResult<VO>`，不返回 Map
@@ -48,9 +51,9 @@ public interface OrderService {
 
 // 正例
 public interface OrderService {
-    PageResult<OrderVO> queryPage(OrderQueryDTO orderQuery);
+    PageResult<OrderVO> queryOrderPage(OrderQueryDTO orderQueryDTO);
     void submitOrder(Long orderId);
-    void cancelOrder(CancelOrderDTO cancelInfo);
+    void cancelOrder(CancelOrderDTO cancelOrderDTO);
 }
 ```
 
@@ -64,7 +67,9 @@ public interface OrderService {
 ## 自检清单
 
 - [ ] 接口描述业务能力，无实现细节
-- [ ] 方法名业务动词，无 do/handle 泛化命名
+- [ ] 方法名业务动词，无 do/handle 泛化命名；返回集合以 xxxList/xxxSet/xxxMap 结尾
+- [ ] 接口方法无 public 修饰词
+- [ ] 参数语义名（无 dto/query/e 泛称）
 - [ ] 参数 > 3 个已包装 DTO
 - [ ] 返回类型面向调用方（VO/PageResult）
 - [ ] 无事务注解
