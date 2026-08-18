@@ -17,15 +17,15 @@
 
 ```java
 // 反例：N+1
-for (Long orderId : orderIds) {
+for (Long orderId : orderIdList) {
     Order order = orderMapper.selectById(orderId);   // 100 次查询
 }
 
 // 正例：批量 + 内存映射
-List<Order> orders = orderMapper.selectBatchIds(orderIds);
+List<Order> orders = orderMapper.selectBatchIds(orderIdList);
 Map<Long, Order> orderMap = orders.stream()
         .collect(Collectors.toMap(Order::getId, Function.identity()));
-for (Long orderId : orderIds) {
+for (Long orderId : orderIdList) {
     Order order = orderMap.get(orderId);
 }
 ```
