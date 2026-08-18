@@ -59,9 +59,10 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - 关键日志带业务上下文 ID，禁敏感信息
 
 ### 注释（见 comment-standards skill）
-- 公开 API 必须 Javadoc，@param/@return 写业务含义（禁止只重复参数名）
-- getter/setter 禁注释；行内注释解释「为什么」，复杂逻辑写 `// WHY:`
-- 禁止翻译代码式注释，注释与代码一致，宁缺毋滥
+- 全量注释：所有类（含 DTO/VO/Config）类注释写清职责、所有变量/字段注释写清含义
+- 所有方法（含测试方法）注释：功能 + @param/@return 业务含义（禁止只重复参数名）
+- 方法体 ≥2 个逻辑步骤编号步骤注释（`// 1. 参数提取…`）；复杂逻辑写 `// WHY:`
+- 禁止逐行翻译式注释，注释与代码一致
 
 ### Service 实现（service-impl-standards.md）
 - 构造器注入（`@RequiredArgsConstructor` + final 字段），禁止字段注入
