@@ -70,9 +70,10 @@ public Result<Void> updateRole(@Valid @RequestBody RoleEditDTO roleEditDTO) { ..
 public Result<Void> deleteRole(@PathVariable Long roleId) { ... }
 ```
 
-- **方法名禁止泛化**：`list` / `create` / `update` / `delete` / `tree`（无业务对象）→ `queryRoleList` / `saveRole` / `updateRole` / `deleteRole` / `getPermissionTreeList`
+- **方法名禁止泛化**：`list` / `create` / `update` / `delete` / `tree`（无业务对象）→ `queryRoleList` / `saveRole` / `updateRole` / `deleteRole` / `getPermissionTree`
 - **路径变量语义化**：`{id}` → `{roleId}` / `{userId}`（带领域前缀）
-- **返回集合资源的路径加 `-list`**：`GET /permission/tree` → `GET /permission/tree-list`（与返回 List 方法名 xxxList 一致）
+- **平级列表资源路径加 `-list`**：`GET /role/list`、`GET /user/list`
+- **树/层级资源豁免 `-list`**（与命名规范树豁免同一判据）：`GET /permission/tree` 保持语义名，不改成 `tree-list`；对应方法名 `getPermissionTree()` 同样豁免
 
 ### 3. 参数校验
 

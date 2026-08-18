@@ -113,13 +113,15 @@ List<Long> permissionIds;             // ❌ 复数命名（与团队约定冲�
 Set<String> codes;                    // ❌ 应 codeSet
 ```
 
-- **返回集合的方法名同样以类型后缀结尾**：
+- **返回集合的方法名以类型后缀结尾**：
 
 ```java
-List<PermissionTreeVO> getPermissionTreeList();   // ✅ 返回 List → 方法名 xxxList 结尾
-Set<String> resolvePermCodeSet(Long userId);      // ✅ 返回 Set → xxxSet 结尾
-List<PermissionTreeVO> getPermissionTree();       // ❌ 未带 List 后缀
+List<RoleVO> queryRoleList(RoleQueryDTO roleQueryDTO);   // ✅ 返回 List → 方法名 xxxList 结尾
+Set<String> resolvePermCodeSet(Long userId);             // ✅ 返回 Set → xxxSet 结尾
+List<RoleVO> queryRole(RoleQueryDTO roleQueryDTO);       // ❌ 未带 List 后缀
 ```
+
+- **树/层级结构豁免（与字段豁免同一判据）**：返回树结构的方法保持语义名，`List<PermissionTreeVO> getPermissionTree()`（树不是平级列表，不加 List 后缀）
 
 - **语义名豁免**：非"列表"语义的集合用业务名，`List<PermissionTreeVO> menuTree`（树结构不是列表集合，保持语义名）；判定：元素关系是「平级列表」→ xxxList；是「树/图/层级结构」→ 语义名
 - 避免拼音、单字母（循环变量 `i/j/k` 除外）
@@ -201,7 +203,7 @@ public class UserInfoController {
 - [ ] 变量 lowerCamelCase，无语义不明缩写；无单字母变量（循环 i/j/k 除外）
 - [ ] 参数名 = 类型小驼峰或角色语义名（无 e/dto/query/response 泛称）
 - [ ] 集合命名统一 `xxxList` / `xxxSet` / `xxxMap` 后缀（树/层级结构豁免语义名）
-- [ ] 返回集合的方法名以 xxxList/xxxSet/xxxMap 结尾
+- [ ] 返回集合的方法名以 xxxList/xxxSet/xxxMap 结尾（树/层级豁免）
 - [ ] 接口方法无 public 修饰词
 - [ ] 常量全大写 + 下划线
 - [ ] DTO/VO/Entity 后缀正确
