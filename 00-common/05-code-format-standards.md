@@ -35,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 - 顺序：static → 自身项目 → 第三方（按字母序）
 - ❌ 通配符导入：`import java.util.*;`（IDE 自动展开）
+- ❌ **禁止未使用 import**：每个 import 必须在类中有实际引用；生成代码后删除无用导入（IDE `Ctrl+Alt+O` 一键清理）
+- ❌ 禁止复制粘贴残留 import：从别处拷贝代码时同步清理其 import，只保留当前类用到的
 
 ### 4. 声明规范
 
@@ -110,7 +112,7 @@ public class Demo {
 
 - [ ] 4 空格缩进，无 Tab
 - [ ] 行宽 ≤ 120
-- [ ] 导入无通配符，分组有序
+- [ ] 导入无通配符，分组有序，无未使用 import
 - [ ] 方法间空 1 行，无多余空行
 - [ ] 常量前置比较
 - [ ] 包装类用 equals
