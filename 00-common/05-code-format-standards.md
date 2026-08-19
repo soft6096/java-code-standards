@@ -28,7 +28,7 @@
 ```java
 import static com.example.Constants.MAX_PAGE_SIZE;  // 1. static
 
-import com.example.common.Result;                    // 2. 第三方与自身
+import com.example.common.Response;                    // 2. 第三方与自身
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 ```

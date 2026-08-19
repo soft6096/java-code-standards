@@ -11,16 +11,25 @@
 - 全部小写，单词间无分隔符
 - 反例：`com.Company.Order` / `com.company_name`
 - 正例：`com.example.hotel.order`
-- **DTO / VO 独立包，禁止挂在 controller 包下**：
+- **每种职责对象独立分包，同类放同一包，禁止混放**。DTO 与 VO 必须分属 `dto` / `vo` 两个独立包，严禁混在同一包：
 
 | 层 | 包 | 说明 |
 |---|---|---|
 | Controller | `com.example.order.controller` | 接口层 |
-| 请求/出参对象 | `com.example.order.dto` / `com.example.order.vo` | 与 controller **平级** |
+| Service 接口/实现 | `com.example.order.service` / `com.example.order.service.impl` | 业务层 |
+| Mapper | `com.example.order.mapper` | 持久层接口 |
 | 实体 | `com.example.order.domain` | 数据库实体 |
+| 请求对象 | `com.example.order.dto` | 入参（DTO） |
+| 出参对象 | `com.example.order.vo` | 出参（VO），**与 dto 分属两个包** |
+| 通用组件 | `com.example.order.common.*` | 工具/异常/统一返回体等 |
+| 配置 | `com.example.order.config` | 配置类 |
 
-- 反例：`com.example.order.controller.vo.MeVO`、`com.example.order.controller.dto.LoginDTO`
-- 正例：`com.example.order.vo.CurrentUserInfoVO`、`com.example.order.dto.LoginDTO`
+- **同类对象不混放**：`dto` 包只放请求入参类，`vo` 包只放出参类，`domain` 只放实体——VO 放进 dto 包、DTO 放进 vo 包均属违规
+- 反例：
+  - `com.example.order.controller.vo.MeVO`、`com.example.order.controller.dto.LoginDTO`（挂 controller 下）
+  - `com.example.order.dto.UserVO`、`com.example.order.vo.LoginDTO`（DTO/VO 混包）
+  - `com.example.order.dto` 同时放 `LoginDTO` 和 `MenuVO`（同类不纯）
+- 正例：`com.example.order.vo.CurrentUserInfoVO`、`com.example.order.dto.LoginDTO`、`com.example.order.domain.Order`
 
 ### 2. 类名 / 接口名
 
@@ -29,7 +38,8 @@
 - 接口不加 `I` 前缀（除历史遗留），实现类加 `Impl` 后缀
 - 反例：`userService`、`getUserData`、`IUserService`、`class A`、`class XxxUtil` 中的 `Util`（无业务含义，用 `XxxSupport`/`XxxHelper` 或并入领域类）
 - 正例：`UserService`（接口）、`UserServiceImpl`（实现）、`OrderController`、`RoleService`
-- **禁止单字母类名**（`class A` / `class B` / `interface I` 均反例）
+- **禁止单字母类名**（`class A` / `class B` / `class R` / `interface I` 均反例）
+- **统一返回体类名固定为 `Response<T>`**，禁止 `R` / `Result` / `ResponseResult` 等其他命名；分页用 `PageResult<T>`（独立分页结构，非返回体）
 - **类名表达业务语义，禁止中文直译/无领域含义缩写**：
 
 ```java
@@ -148,7 +158,7 @@ List<RoleVO> queryRole(RoleQueryDTO roleQueryDTO);       // ❌ 未带 List 后�
 ### 8. 接口方法修饰词（Service/Mapper 接口）
 
 - **接口方法不写访问修饰词**（隐式 `public abstract`，Java 惯例，写 `public` 是冗余）
-- 反例：`public Result<Void> updateRole(...)`（接口内）
+- 反例：`public Response<Void> updateRole(...)`（接口内）
 - 正例：
 
 ```java
@@ -196,9 +206,9 @@ public class UserInfoController {
 
 ## 自检清单
 
-- [ ] 包名全小写；DTO/VO 独立包（不在 controller 包下）
-- [ ] 类 UpperCamelCase，接口无 `I` 前缀，实现带 `Impl`
-- [ ] 类名业务语义（去后缀后是领域术语），无中文直译（MeVO 类反例）
+- [ ] 包名全小写；每种职责独立包，同类不混放；DTO/VO 分属 `dto` / `vo` 两包，不在 controller 包下
+- [ ] 类 UpperCamelCase，接口无 `I` 前缀，实现带 `Impl`；无单字母类名（`R` 类反例）
+- [ ] 类名业务语义（去后缀后是领域术语），无中文直译（MeVO 类反例）；统一返回体为 `Response<T>`
 - [ ] 方法 lowerCamelCase，动词开头，分层前缀正确
 - [ ] 变量 lowerCamelCase，无语义不明缩写；无单字母变量（循环 i/j/k 除外）
 - [ ] 参数名 = 类型小驼峰或角色语义名（无 e/dto/query/response 泛称）

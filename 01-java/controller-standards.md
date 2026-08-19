@@ -21,8 +21,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public Result<OrderVO> create(@Validated @RequestBody OrderCreateDTO createInfo) {
-        return Result.success(orderService.create(createInfo));
+    public Response<OrderVO> create(@Validated @RequestBody OrderCreateDTO createInfo) {
+        return Response.success(orderService.create(createInfo));
     }
 }
 ```
@@ -48,26 +48,26 @@ public class OrderController {
 ```java
 // 反例：直译缩写 / 泛化方法名
 @GetMapping("/me")
-public Result<MeVO> me() { ... }
+public Response<MeVO> me() { ... }
 
 @GetMapping("/role/list")
-public Result<PageResult<RoleVO>> list(RoleQueryDTO query) { ... }
+public Response<PageResult<RoleVO>> list(RoleQueryDTO query) { ... }
 
 // 正例：动词前缀 + 业务语义 + 语义化路径变量与参数名
 @GetMapping("/current-user-info")
-public Result<CurrentUserInfoVO> getCurrentUserInfo() { ... }
+public Response<CurrentUserInfoVO> getCurrentUserInfo() { ... }
 
 @GetMapping("/role/list")
-public Result<PageResult<RoleVO>> queryRoleList(RoleQueryDTO roleQueryDTO) { ... }
+public Response<PageResult<RoleVO>> queryRoleList(RoleQueryDTO roleQueryDTO) { ... }
 
 @PostMapping("/role")
-public Result<RoleVO> saveRole(@Valid @RequestBody RoleSaveDTO roleSaveDTO) { ... }
+public Response<RoleVO> saveRole(@Valid @RequestBody RoleSaveDTO roleSaveDTO) { ... }
 
 @PutMapping("/role")
-public Result<Void> updateRole(@Valid @RequestBody RoleEditDTO roleEditDTO) { ... }
+public Response<Void> updateRole(@Valid @RequestBody RoleEditDTO roleEditDTO) { ... }
 
 @DeleteMapping("/role/{roleId}")
-public Result<Void> deleteRole(@PathVariable Long roleId) { ... }
+public Response<Void> deleteRole(@PathVariable Long roleId) { ... }
 ```
 
 - **方法名禁止泛化**：`list` / `create` / `update` / `delete` / `tree`（无业务对象）→ `queryRoleList` / `saveRole` / `updateRole` / `deleteRole` / `getPermissionTree`
@@ -97,7 +97,8 @@ public class OrderCreateDTO {
 
 ### 4. 响应封装
 
-- 统一返回 `Result<T>`（code/message/data），业务异常由全局处理器转为 `Result`
+- 统一返回 `Response<T>`（code/message/data），业务异常由全局处理器转为 `Response`
+- **统一返回体类名固定为 `Response<T>`**，放 `common.web` 包；禁止单字母类名（`R`）或其他别名（`Result` / `ApiResponse` / `ResponseResult`）
 - 方法签名不写 `throws`，异常全部上抛
 
 ### 5. 分页入参
@@ -120,20 +121,20 @@ public class PageQuery {
 ```java
 // 反例：Controller 写业务
 @GetMapping("/getOrderInfo")
-public Result<OrderVO> get(String id, String type) {
+public Response<OrderVO> get(String id, String type) {
     if (id == null || id.isEmpty()) {
-        return Result.error("参数错误");
+        return Response.error("参数错误");
     }
     Order order = orderMapper.selectById(id);       // 直接操作 Mapper
     OrderVO orderVO = new OrderVO();
     orderVO.setStatus(order.getStatus() == 1 ? "已提交" : "处理中"); // 业务判断
-    return Result.success(orderVO);
+    return Response.success(orderVO);
 }
 
 // 正例
 @GetMapping("/{id}")
-public Result<OrderVO> getById(@PathVariable Long id) {
-    return Result.success(orderService.getById(id));
+public Response<OrderVO> getById(@PathVariable Long id) {
+    return Response.success(orderService.getById(id));
 }
 ```
 
@@ -157,7 +158,7 @@ public Result<OrderVO> getById(@PathVariable Long id) {
 - [ ] RESTful 路径规范（kebab-case 连字符、弃用 /me 类缩写惯例）
 - [ ] 方法名业务语义（动词前缀 + 领域术语，无 me/info 类直译）
 - [ ] 入参 @Validated + 校验注解
-- [ ] 统一 Result 返回
+- [ ] 统一返回体为 `Response<T>`（非 R/Result/ApiResponse）
 - [ ] 无 try/catch 堆积
 - [ ] 无业务逻辑
 - [ ] 分页参数带上限校验

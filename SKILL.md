@@ -42,7 +42,9 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 ## 核心规范速查
 
 ### 命名（01-naming-standards.md）
-- 类 UpperCamelCase，接口无 `I` 前缀，实现类 `Impl` 后缀
+- 类 UpperCamelCase，接口无 `I` 前缀，实现类 `Impl` 后缀；**禁止单字母类名**（`R` 统一返回体类名反例）
+- 统一返回体固定为 `Response<T>`（code/message/data），放 `common.web`；分页用 `PageResult<T>`；禁止 `R` / `Result` / `ApiResponse`
+- **包结构：每种职责独立分包，同类不混放**——`controller` / `service` / `service.impl` / `mapper` / `domain`（实体）/ `dto`（入参）/ `vo`（出参）各归其包；DTO 与 VO 必须分属 `dto`、`vo` 两个独立包，严禁 VO 放 dto 包或 DTO 放 vo 包
 - 方法 lowerCamelCase 动词开头，分层前缀：Controller `get/create/update/delete`、Service `query/save/modify/remove`、Mapper `select/insert/update/delete`
 - 变量表达语义角色，见名知意：`OrderQueryDTO orderQuery`、`OrderCreateDTO createInfo`、`OrderUpdateDTO updateInfo`、`OrderVO orderVO`
 - 禁止无意义简写：`dto` / `vo` / `query` / `result` 单独作变量名（作用域 ≤ 5 行可豁免）

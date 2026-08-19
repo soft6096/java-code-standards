@@ -1,6 +1,6 @@
 package com.example.module.controller;
 
-import com.example.common.Result;
+import com.example.common.Response;
 import com.example.module.dto.XxxCreateDTO;
 import com.example.module.dto.XxxQueryDTO;
 import com.example.module.dto.XxxUpdateDTO;
@@ -33,8 +33,8 @@ public class XxxController {
      * @return Xxx 详情
      */
     @GetMapping("/{id}")
-    public Result<XxxVO> getById(@PathVariable @NotNull(message = "ID不能为空") Long id) {
-        return Result.success(xxxService.getById(id));
+    public Response<XxxVO> getById(@PathVariable @NotNull(message = "ID不能为空") Long id) {
+        return Response.success(xxxService.getById(id));
     }
 
     /**
@@ -44,8 +44,8 @@ public class XxxController {
      * @return 分页结果
      */
     @GetMapping("/page")
-    public Result<PageResult<XxxVO>> queryPage(@Validated XxxQueryDTO xxxQuery) {
-        return Result.success(xxxService.queryPage(xxxQuery));
+    public Response<PageResult<XxxVO>> queryPage(@Validated XxxQueryDTO xxxQuery) {
+        return Response.success(xxxService.queryPage(xxxQuery));
     }
 
     /**
@@ -55,8 +55,8 @@ public class XxxController {
      * @return 新记录 ID
      */
     @PostMapping
-    public Result<Long> create(@Validated @RequestBody XxxCreateDTO createInfo) {
-        return Result.success(xxxService.create(createInfo));
+    public Response<Long> create(@Validated @RequestBody XxxCreateDTO createInfo) {
+        return Response.success(xxxService.create(createInfo));
     }
 
     /**
@@ -67,9 +67,9 @@ public class XxxController {
      * @return 更新结果
      */
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id, @Validated @RequestBody XxxUpdateDTO updateInfo) {
+    public Response<Void> update(@PathVariable Long id, @Validated @RequestBody XxxUpdateDTO updateInfo) {
         xxxService.update(id, updateInfo);
-        return Result.success();
+        return Response.success();
     }
 
     /**
@@ -79,8 +79,8 @@ public class XxxController {
      * @return 删除结果
      */
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Response<Void> delete(@PathVariable Long id) {
         xxxService.delete(id);
-        return Result.success();
+        return Response.success();
     }
 }

@@ -16,8 +16,8 @@
 ```java
 @GetMapping("/{id}")
 @PreAuthorize("hasAuthority('order:query')")
-public Result<OrderVO> getById(@PathVariable Long id) {
-    return Result.success(orderService.getById(id));
+public Response<OrderVO> getById(@PathVariable Long id) {
+    return Response.success(orderService.getById(id));
 }
 ```
 

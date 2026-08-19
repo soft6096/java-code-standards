@@ -242,26 +242,26 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/{id}")
-    public Result<ProductVO> getById(@PathVariable @NotNull Long id) {
-        return Result.success(productService.getById(id));
+    public Response<ProductVO> getById(@PathVariable @NotNull Long id) {
+        return Response.success(productService.getById(id));
     }
 
     @PostMapping
-    public Result<Long> create(@Validated @RequestBody ProductCreateDTO createInfo) {
-        return Result.success(productService.create(createInfo));
+    public Response<Long> create(@Validated @RequestBody ProductCreateDTO createInfo) {
+        return Response.success(productService.create(createInfo));
     }
 
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id,
+    public Response<Void> update(@PathVariable Long id,
                                @Validated @RequestBody ProductUpdateDTO updateInfo) {
         productService.update(id, updateInfo);
-        return Result.success();
+        return Response.success();
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Response<Void> delete(@PathVariable Long id) {
         productService.delete(id);
-        return Result.success();
+        return Response.success();
     }
 }
 ```

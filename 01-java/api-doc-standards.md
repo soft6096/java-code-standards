@@ -20,8 +20,8 @@ public class OrderController {
 
     @Operation(summary = "创建订单", description = "创建订单，返回订单号")
     @PostMapping
-    public Result<OrderVO> create(@Validated @RequestBody OrderCreateDTO createInfo) {
-        return Result.success(orderService.create(createInfo));
+    public Response<OrderVO> create(@Validated @RequestBody OrderCreateDTO createInfo) {
+        return Response.success(orderService.create(createInfo));
     }
 }
 ```
@@ -41,7 +41,7 @@ public class OrderCreateDTO {
 ### 2. 文档与代码一致
 
 - 接口签名变更 → 同步改注解（文档是接口契约一部分，过期文档误导联调）
-- 响应结构返回 `Result<T>` 泛型，让文档展示真实响应结构（禁 Map 裸返回，文档不可读）
+- 响应结构返回 `Response<T>` 泛型，让文档展示真实响应结构（禁 Map 裸返回，文档不可读）
 
 ### 3. 禁止事项
 

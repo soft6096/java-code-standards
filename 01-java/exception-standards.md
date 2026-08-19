@@ -97,7 +97,7 @@ throw new BusinessException(ErrorCode.ORDER_STATUS_ILLEGAL, "当前状态为已�
 
 ## 最佳实践
 
-- 全局异常处理器对 `BusinessException` 取 code+message 返回 `Result`，对未知异常记日志返回通用错误
+- 全局异常处理器对 `BusinessException` 取 code+message 返回 `Response`，对未知异常记日志返回通用错误
 - 错误码文档化：README 或枚举注释维护错误码表，前端对照提示
 - 错误码一经发布不改语义，废弃用新码，避免前端旧逻辑错乱
 
