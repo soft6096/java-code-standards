@@ -49,6 +49,8 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - 变量名 = `[来源/角色限定] + [领域词] + [类型后缀]`，2~3 个词表达业务语义：`LoginVO loginResult`、`SysUser existingUser`、`String accessToken`、`OrderQueryDTO orderQuery`
 - 变量命名反模式（命中即改）：单字母（`e`/`p`）、泛称简写（`vo`/`dto`/`data`/`obj`）、类型机械小驼峰（`User user`/`Token token`）、单单词泛指（`user`/`token`/`list`/`map`）、序号命名（`user1`/`data2`）、拼音
 - 同类型多变量用语义限定词区分：`cachedOrderVO`/`dbOrderVO`、`sourceOrderVO`/`targetOrderVO`、`accessToken`/`refreshToken`
+- 异常处理参数禁单字母 `e`：`@ExceptionHandler(ServiceException.class)` 用 `ServiceException serviceException`；`catch (Exception exception)`
+- 分页对象 `IPage<T> pageResult` / `Page<T> pageResult` 语义命名（非裸 `page`）；集合字段 `recordList`（非 `records`），统一 `xxxList`/`xxxSet`/`xxxMap`
 - 常量全大写 + 下划线
 
 ### 异常（03-exception-standards.md）

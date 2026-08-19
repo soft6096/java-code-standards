@@ -136,6 +136,27 @@ public void cancelOrder(CancelOrderDTO cancelInfo) { ... }               // 取�
 ```
 
 - **禁止泛称参数名**：`e` / `dto` / `query` / `response` / `req`（反例）→ `exception` / `roleQueryDTO` / `httpServletResponse`；有多个同类参数用角色前缀（`sourceOrderVO` / `targetOrderVO`）
+- **异常处理参数禁止单字母 `e`**（覆盖 `catch` 与 `@ExceptionHandler` 方法参数）：参数名 = 类型名小驼峰
+
+```java
+@ExceptionHandler(ServiceException.class)
+public Response<Void> handleServiceException(ServiceException serviceException) { ... }
+
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public Response<Void> handleValidationException(MethodArgumentNotValidException methodArgumentNotValidException) { ... }
+
+@ExceptionHandler(BindException.class)
+public Response<Void> handleBindException(BindException bindException) { ... }
+
+@ExceptionHandler(Exception.class)
+public Response<Void> handleException(Exception exception) { ... }
+
+// catch 同理
+catch (ServiceException serviceException) { ... }
+catch (Exception exception) { ... }
+```
+
+- **分页参数对象用语义名 `pageResult` / `pageQuery`**（禁止裸 `page` 单单词泛指）：`IPage<SysUser> pageResult`（MyBatis-Plus 分页对象，承载结果）；入参分页条件用 `PageQuery pageQuery`
 
 #### 集合命名
 
@@ -148,6 +169,8 @@ Map<Long, Order> orderMap;            // ✅ Map → xxxMap
 List<OrderVO> orderVOList;            // ✅ 统一 xxxList
 List<Long> permissionIds;             // ❌ 复数命名（与团队约定冲突）
 Set<String> codes;                    // ❌ 应 codeSet
+List<T> records;                      // ❌ records 无语义 → recordList
+List<T> recordList;                   // ✅ 当前页记录列表
 ```
 
 - **返回集合的方法名以类型后缀结尾**：

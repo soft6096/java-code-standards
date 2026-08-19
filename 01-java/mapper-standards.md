@@ -16,7 +16,7 @@
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
 
-    Page<Order> selectOrderPage(Page<Order> page, @Param("query") OrderQueryDTO orderQuery);
+    Page<Order> selectOrderPage(Page<Order> pageResult, @Param("query") OrderQueryDTO orderQuery);
 }
 ```
 
@@ -72,6 +72,7 @@ List<OrderVO> selectOrderVOList(@Param("status") Integer status,
 - [ ] 继承 BaseMapper，无重复通用 CRUD 定义
 - [ ] 方法命名 select/insert/update/delete 前缀
 - [ ] 多参数全部 @Param
+- [ ] 分页参数 `Page<T> pageResult` 语义命名（非裸 `page`）
 - [ ] 无 Map 返回主结果
 - [ ] 无业务逻辑在 Mapper
 - [ ] 接口方法均有实现（注解/XML/BaseMapper）
