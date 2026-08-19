@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 - 顺序：static → 自身项目 → 第三方（按字母序）
 - ❌ 通配符导入：`import java.util.*;`（IDE 自动展开）
-- ❌ **禁止未使用 import**：每个 import 必须在类中有实际引用；生成代码后清理无用导入（用所在 IDE 的 Optimize Imports 功能，如 IntelliJ IDEA `Ctrl+Alt+O`、VS Code `Shift+Alt+O` 等，或命令行工具 Checkstyle/Spotless 自动去除）
+- ❌ **禁止未使用 import**：每个 import 必须在类中有实际引用；生成代码后清理无用导入（用所在 IDE 的「Optimize Imports / 清理导入」菜单或命令功能，或命令行工具 Checkstyle/Spotless 自动去除；具体入口以个人 IDE 配置为准）
 - ❌ 禁止复制粘贴残留 import：从别处拷贝代码时同步清理其 import，只保留当前类用到的
 
 ### 4. 声明规范
