@@ -69,31 +69,64 @@ public class CurrentUserInfoVO { ... }
 
 ### 4. 变量名
 
-- lowerCamelCase，表达**语义角色**，见名知意
-- **变量名建议 2~3 个词，表达实际业务语义**：`existingUser` / `loginResult` / `newPassword`；单个单词仅限不可再拆的领域原子概念（`id` / `name` / `status` / `quantity`）
-- **禁止无意义简写当变量名**（无豁免）：`dto` / `vo` / `query` / `result` / `info` 单独作变量名一律反例，应改为 `orderCreateDTO` / `loginResult` / `userQuery` 等
-- **禁止单个单词的泛指变量**（无业务语义）：`user` / `token` / `list` / `map` 单独作变量名反例，应具体化为 `existingUser` / `accessToken` / `orderList` / `roleMap`
-- **禁止单字母变量名**（整数索引循环变量 `i/j/k` 除外）：`e` / `p` / `s` / `d` 均为反例
+#### 核心原则
+
+- lowerCamelCase，表达**语义角色**（这个变量是谁、从哪来、干什么用），见名知意，不依赖注释
+- 命名模板：**`[来源/角色限定] + [领域词] + [类型/角色后缀]`**，如 `existingUser` / `loginResult` / `accessToken`
+- 变量名 2~3 个词最佳；单个单词仅限领域原子概念（`id` / `name` / `status` / `quantity`）
+- **一票判定**：删掉类型声明后，名字能否独立回答「它是谁、从哪来、干什么用」——答不出即反例
+
+#### 反模式分类（对号入座，命中即改）
+
+| # | 反模式 | 特征 | ❌ 反例 | ✅ 正例 |
+|---|--------|------|---------|---------|
+| 1 | 单字母 | 变量只有一个字母 | `e` `p` `s` `d` | `exception` `sysPermission`（循环索引 `i/j/k` 豁免） |
+| 2 | 无意义简写 | 泛称后缀，无业务信息 | `vo` `dto` `query` `result` `info` `data` `obj` `req` `resp` `param` `item` `entity` | `loginResult` `orderQuery` `saveInfo` `userItem` → 具体到 `roleItem` |
+| 3 | 类型机械小驼峰 | 变量名 = 类型名改小写，无角色信息 | `User user` `Token token` `LoginVO vo` `OrderCreateDTO dto` | `existingUser` `accessToken` `loginResult` `orderCreateInfo` |
+| 4 | 单单词泛指 | 有领域词但缺来源/角色，上下文有歧义 | `user`（查出的还是入参？）`token`（哪种？）`name`（谁的？）`list` `map` `config` | `existingUser` `accessToken` `userName` `orderList` `roleMap` `mybatisConfig` |
+| 5 | 同类不区分 | 同方法多个同类变量同名或不可辨 | 两个 `OrderVO orderVO`、两个 `String token` | `sourceOrderVO` / `targetOrderVO`、`accessToken` / `refreshToken` |
+| 6 | 序号命名 | 数字后缀无语义 | `user1` `user2` `data1` `data2` `token2` | `sourceUser` `targetUser` `primaryData` `fallbackData` `newToken` |
+| 7 | 拼音 | 拼音当变量名 | `shuliang` `yonghu` `zhunbei` | `quantity` `user` `prepared` |
+
+#### 来源 / 角色限定词（给单单词补身份）
+
+- 来源：`existing`（库中已存在）/ `current`（当前）/ `cached`（缓存）/ `db`（库里）/ `input` / `output` / `new` / `old`
+- 关系：`source` / `target`（转换源目标）、`first` / `second`（次序）、`primary` / `fallback`（主备）
+- 类型后缀：DTO → `CreateInfo` / `Query` / `UpdateInfo`；VO → `Result` / `Detail` 或领域语义；Token → `AccessToken` / `RefreshToken` / `AuthToken`
 
 ```java
-// 反例：单字母 / 无信息量 / 泛指单词 / 机械重复类型名
-OrderVO vo;                      // vo → loginResult（业务结果语义）
-OrderCreateDTO dto;              // dto → orderCreateDTO
-SysUser user;                    // user → existingUser（库里查出的既有用户）
-String token;                    // token → accessToken（区别于 refreshToken）
-for (SysPermission p : permissionList) { ... }
-catch (Exception e) { ... }      // e → exception 或业务语义名
+// 反例：覆盖反模式 1/2/3/4/5/6
+OrderVO vo;                  // #2
+SysUser user;                // #3/#4
+String token;                // #3/#4
+OrderVO orderVO, orderVO2;   // #5/#6
+for (SysPermission p : permissionList) { ... }   // #1
+catch (Exception e) { ... }  // #1
 
 // 正例
-OrderVO orderVO;                 // 单一出参可领域词+类型后缀
-LoginVO loginResult;             // 登录结果（业务语义名）
-SysUser existingUser;            // 已存在的用户
-String accessToken;              // 访问令牌（与 refreshToken 区分）
+LoginVO loginResult;         // 登录结果
+SysUser existingUser;        // 库中已存在用户
+String accessToken;          // 访问令牌
+OrderVO sourceOrderVO;       // 源订单（转换）
+OrderVO targetOrderVO;       // 目标订单
 for (SysPermission sysPermission : sysPermissionList) { ... }
 catch (Exception exception) { ... }
 ```
 
-- **方法参数按角色命名（领域词 + 角色词，不机械重复完整类型名）**：
+- **同类型多变量并存，用语义限定词区分**（来源/关系/用途），禁止同名或序号
+
+```java
+OrderVO cachedOrderVO = cache.get(key, OrderVO.class);   // 缓存中的
+OrderVO dbOrderVO = orderService.getDetailFromDb(id);    // 库里的
+String accessToken;                                       // 访问令牌
+String refreshToken;                                      // 刷新令牌
+```
+
+- 基础类型直接语义命名：`String name`、`Map<Long, Order> orderMap`
+
+#### 方法参数
+
+- **参数名按角色命名（领域词 + 角色词，不机械重复完整类型名）**：
 
 ```java
 public PageResult<OrderVO> queryPage(OrderQueryDTO orderQuery) { ... }   // 查询条件
@@ -102,22 +135,10 @@ public void update(Long id, OrderUpdateDTO updateInfo) { ... }           // 更�
 public void cancelOrder(CancelOrderDTO cancelInfo) { ... }               // 取消参数
 ```
 
-- **参数名默认 = 类型名小驼峰**（省略泛称歧义时）：`RoleSaveDTO roleSaveDTO`、`BindException bindException`、`HttpServletResponse httpServletResponse`；有多个同类参数再加角色前缀（`sourceOrderVO` / `targetOrderVO`）
-- **禁止泛称参数名**：`e` / `dto` / `query` / `response` / `req`（反例）→ `exception` / `roleQueryDTO` / `httpServletResponse`
+- **禁止泛称参数名**：`e` / `dto` / `query` / `response` / `req`（反例）→ `exception` / `roleQueryDTO` / `httpServletResponse`；有多个同类参数用角色前缀（`sourceOrderVO` / `targetOrderVO`）
 
-- **多个同类型变量并存时，加语义限定前缀区分**（谁是谁、用途）
+#### 集合命名
 
-```java
-// 正例：同一方法两个 OrderVO
-OrderVO cachedOrderVO = cache.get(key, OrderVO.class);  // 缓存中的
-OrderVO dbOrderVO = orderService.getDetailFromDb(id);   // 库里的
-// 转换场景
-OrderVO sourceOrderVO;   // 源
-OrderVO targetOrderVO;   // 目标
-```
-
-- 单变量 VO **优先用业务语义名**（`loginResult` / `menuTree` / `userInfo`），类型名小驼峰（`OrderVO orderVO`）仅在无更好业务语义时作为兜底
-- 基础类型直接语义命名：`String name`、`Map<Long, Order> orderMap`
 - **集合字段/局部变量命名：统一 `xxxList` / `xxxSet` / `xxxMap` 后缀（按元素类型），禁止复数命名**：
 
 ```java
@@ -138,11 +159,8 @@ List<RoleVO> queryRole(RoleQueryDTO roleQueryDTO);       // ❌ 未带 List 后�
 ```
 
 - **树/层级结构豁免（与字段豁免同一判据）**：返回树结构的方法保持语义名，`List<PermissionTreeVO> getPermissionTree()`（树不是平级列表，不加 List 后缀）
-
 - **语义名豁免**：非"列表"语义的集合用业务名，`List<PermissionTreeVO> menuTree`（树结构不是列表集合，保持语义名）；判定：元素关系是「平级列表」→ xxxList；是「树/图/层级结构」→ 语义名
 - 避免拼音、单字母（循环变量 `i/j/k` 除外）
-- 反例：`OrderVO vo`、`OrderUpdateDTO dto`、`String s`、`SysUser user`、`String token`、`int shuliang`、`List<Long> roleIds`、`for (SysPermission p : ...)`
-- 正例：`LoginVO loginResult`、`SysUser existingUser`、`String accessToken`、`OrderQueryDTO orderQuery`、`String name`、`int quantity`、`List<Long> roleIdList`、`for (SysPermission sysPermission : sysPermissionList)`
 
 ### 5. 常量名
 
@@ -216,9 +234,9 @@ public class UserInfoController {
 - [ ] 类 UpperCamelCase，接口无 `I` 前缀，实现带 `Impl`；无单字母类名（`R` 类反例）
 - [ ] 类名业务语义（去后缀后是领域术语），无中文直译（MeVO 类反例）；统一返回体为 `Response<T>`
 - [ ] 方法 lowerCamelCase，动词开头，分层前缀正确
-- [ ] 变量 2~3 个词表达业务语义；无 vo/dto/user/token 等无意义单单词；无单字母变量（循环 i/j/k 除外）
-- [ ] 同类型多变量已用实义前缀区分（existingUser / dbOrderVO / accessToken / refreshToken）
-- [ ] 参数名 = 类型小驼峰或角色语义名（无 e/dto/query/response 泛称）
+- [ ] 变量名符合「来源/角色 + 领域词 + 类型后缀」模板，2~3 个词表达业务语义；无单字母、无泛称简写（vo/dto/data/obj）、无类型机械小驼峰（User user）、无单单词泛指（user/token/list）、无序号命名（user1）
+- [ ] 同类型多变量已用实义限定词区分（existing/db/cached、source/target、accessToken/refreshToken）
+- [ ] 参数名 = 角色语义名（无 e/dto/query/response 泛称）
 - [ ] 集合命名统一 `xxxList` / `xxxSet` / `xxxMap` 后缀（树/层级结构豁免语义名）
 - [ ] 返回集合的方法名以 xxxList/xxxSet/xxxMap 结尾（树/层级豁免）
 - [ ] 接口方法无 public 修饰词

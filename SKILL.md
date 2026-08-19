@@ -46,9 +46,9 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - 统一返回体固定为 `Response<T>`（code/message/data），放 `common.web`；分页用 `PageResult<T>`；禁止 `R` / `Result` / `ApiResponse`
 - **包结构：每种职责独立分包，同类不混放**——`controller` / `service` / `service.impl` / `mapper` / `domain`（实体）/ `dto`（入参）/ `vo`（出参）各归其包；DTO 与 VO 必须分属 `dto`、`vo` 两个独立包，严禁 VO 放 dto 包或 DTO 放 vo 包
 - 方法 lowerCamelCase 动词开头，分层前缀：Controller `get/create/update/delete`、Service `query/save/modify/remove`、Mapper `select/insert/update/delete`
-- 变量 2~3 个词表达业务语义，见名知意：`LoginVO loginResult`、`SysUser existingUser`、`String accessToken`、`OrderQueryDTO orderQuery`、`OrderCreateDTO createInfo`、`OrderUpdateDTO updateInfo`
-- 禁止无意义单单词变量：`vo` / `dto` / `user` / `token` / `query` / `result`（应 `loginResult` / `existingUser` / `accessToken` / `orderQuery`）
-- 同类型多变量加语义限定区分：`cachedOrderVO` / `dbOrderVO`、`accessToken` / `refreshToken`
+- 变量名 = `[来源/角色限定] + [领域词] + [类型后缀]`，2~3 个词表达业务语义：`LoginVO loginResult`、`SysUser existingUser`、`String accessToken`、`OrderQueryDTO orderQuery`
+- 变量命名反模式（命中即改）：单字母（`e`/`p`）、泛称简写（`vo`/`dto`/`data`/`obj`）、类型机械小驼峰（`User user`/`Token token`）、单单词泛指（`user`/`token`/`list`/`map`）、序号命名（`user1`/`data2`）、拼音
+- 同类型多变量用语义限定词区分：`cachedOrderVO`/`dbOrderVO`、`sourceOrderVO`/`targetOrderVO`、`accessToken`/`refreshToken`
 - 常量全大写 + 下划线
 
 ### 异常（03-exception-standards.md）
