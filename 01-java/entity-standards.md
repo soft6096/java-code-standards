@@ -48,11 +48,19 @@ public class Order {
 | 非主表字段 | `@TableField(exist = false)` |
 | 逻辑删除 | `@TableLogic` + 全局配置逻辑值 |
 | 乐观锁 | `@Version` + 乐观锁插件 |
-| 自动填充 | `@TableField(fill = FieldFill.INSERT)` 配合 MetaObjectHandler |
+| 自动填充 | `@TableField(fill = FieldFill.INSERT)` **必须**配合 MetaObjectHandler |
 | 字段名非驼峰 | `@TableField("column_name")` |
 
 - 主键：分布式环境用 `ASSIGN_ID`（雪花），不自增 `AUTO`（分库分表不兼容）
 - 数据库默认值由 MetaObjectHandler 或 DB 默认处理，业务代码不重复赋值
+
+**自动填充强制规则（createTime/updateTime 报 NOT NULL 的根因防线）**：
+
+实体标注 `@TableField(fill = FieldFill.INSERT / INSERT_UPDATE)` 后，**项目必须存在一个 MetaObjectHandler 实现类**（如 `MyMetaObjectHandler`，`@Component`，自动填充 createTime/updateTime）：
+
+- 有 fill 注解但无 MetaObjectHandler → 插入时字段为 NULL，违反 NOT NULL 约束，报 `Column 'create_time' cannot be null`（启动不报错，一插就炸，最坑）
+- 该组件属**项目级基础设施**，在项目初始化/脚手架阶段创建（见 `04-templates/MyMetaObjectHandler.java` 模板），新建项目默认包含
+- 数据库表 `create_time/update_time` 也要配默认值 `DEFAULT CURRENT_TIMESTAMP` 兜底（双保险，见 database-standards 表设计规范）
 
 ### 3. 类型规范
 
@@ -96,6 +104,22 @@ public class Order {
 }
 ```
 
+```java
+// 反例 2：@TableField(fill=...) 标注自动填充，但项目没有 MetaObjectHandler 实现
+// → 插入报 Column 'create_time' cannot be null
+@TableField(fill = FieldFill.INSERT)
+private LocalDateTime createTime;
+```
+
+```java
+// 正例：fill 注解 + 项目级 MyMetaObjectHandler（见 04-templates/MyMetaObjectHandler.java）
+@TableField(fill = FieldFill.INSERT)
+private LocalDateTime createTime;
+
+@TableField(fill = FieldFill.INSERT_UPDATE)
+private LocalDateTime updateTime;
+```
+
 ## 最佳实践
 
 - 主键/时间/逻辑删除字段由插件与 MetaObjectHandler 统一处理，业务代码不手动 set
@@ -112,3 +136,4 @@ public class Order {
 - [ ] 无校验注解、无业务逻辑
 - [ ] 必备字段齐（id/createTime/updateTime/deleted）
 - [ ] 字段有注释
+- [ ] 有 `@TableField(fill=...)` → 项目已实现 MetaObjectHandler（MyMetaObjectHandler），否则插入报 NOT NULL

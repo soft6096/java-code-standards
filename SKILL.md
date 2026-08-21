@@ -24,6 +24,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 写 DTO / VO | `00-common/*` + 对应类规范 | converter |
 | 写 Config / Utils / Enum / Constants 等 | `00-common/*` + 对应类规范 | - |
 | 写 application.yml / 配置文件 / 连接池 | `01-java/application-config-standards.md` | config-standards |
+| 生成项目脚手架 / 工程初始化（配置 + 公共组件） | build-standards + `01-java/application-config-standards.md` + `04-templates/`（ConfigTemplate / MyMetaObjectHandler） | database-standards `table-design-standards.md` |
 | 认证鉴权 / 安全 | `01-java/security-standards.md` | controller-standards |
 | 写 Listener（MQ 消费） | `01-java/listener-standards.md` | database-standards `pagination-standards.md` |
 | 写 Job（定时任务） | `01-java/job-standards.md` | concurrency |
@@ -78,6 +79,12 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - SQL/表设计/索引/分页/MyBatis XML 规范见 **database-standards** skill，本 skill 只覆盖 Java 侧（Mapper 接口结构）
 - Mapper 接口：继承 `BaseMapper`，方法命名 select/insert/update/delete 前缀，多参数 `@Param`，禁 Map 返回
 - 批量操作 foreach 500~1000 一批，禁止循环单条
+- **自动填充**：实体 `@TableField(fill=...)` 必须配套项目级 `MetaObjectHandler`（见 04-templates/MyMetaObjectHandler.java），缺失插入报 `Column 'create_time' cannot be null`
+
+### 工程配置（application-config-standards.md 摘要）
+- 多环境四件套：`application.yml` + `-dev` / `-qa` / `-online`，禁止单文件裸奔；profile 激活 `${SPRING_PROFILES_ACTIVE:dev}` 不写死
+- HikariCP 显式池参数，禁止 datasource 三件套（url/username/password）裸奔
+- JDBC URL：端口与环境实际一致（禁默认 3306 想当然）；**禁写 `characterEncoding=utf8mb4`**（Connector/J 8.x 报 Unsupported character encoding），不写或写 `characterEncoding=UTF-8`
 
 ### 安全（security-standards.md）
 - 接口权限注解 + 资源归属校验（防 IDOR）；SQL 全参数化
