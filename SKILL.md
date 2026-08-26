@@ -15,7 +15,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 
 | 任务类型 | 必读 | 建议读 |
 |---|---|---|
-| 任意 Java 代码 | `00-common/*`（4 份）+ comment-standards `comment-standards.md` | - |
+| 任意 Java 代码 | `00-common/*`（4 份）+ comment-standards `standards/comment-standards.md` | - |
 | 写 Controller | `00-common/*` + `01-java/controller-standards.md` | validator / vo / dto |
 | 写 Service 接口 | `00-common/*` + `01-java/service-standards.md` | exception / enum |
 | 写 Service 实现 | `00-common/*` + `01-java/service-impl-standards.md` | exception / enum |
