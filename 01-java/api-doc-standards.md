@@ -4,6 +4,12 @@
 
 生成接口文档注解（SpringDoc/OpenAPI/knife4j）、评审接口文档时加载。
 
+## 文档平台（Apifox 兼容）
+
+- 代码侧统一 OpenAPI 注解（本规范），与文档平台**解耦**——**Apifox 支持 OpenAPI 导入**（项目级"导入 OpenAPI"同步接口），注解照常写，与"用 Apifox 不用 Swagger"的团队约定不冲突
+- 团队用 Apifox 时：Apifox 为接口文档事实源（在线协作/联调/Mock），OpenAPI 注解随代码维护供同步；knife4j 仅作离线导出备选
+- 存量项目已用 Apifox（不用 Swagger/knife4j）→ 以老项目约定为准（见 ai-dev-workflow 存量适配模式，规范仅兜底）
+
 ## 强制规则
 
 ### 1. 注解使用
