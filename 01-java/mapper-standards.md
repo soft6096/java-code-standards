@@ -52,19 +52,30 @@ List<Order> selectByStatus(@Param("status") Integer status,
 ### 5. 禁止事项
 
 - ❌ 在 Mapper 里写业务逻辑（if 状态判断等）
-- ❌ 接口方法无实现且无注解/XML（运行期炸，编译不报错）——自查
+- ❌ **注解 SQL**（`@Select`/`@Insert`/`@Update`/`@Delete`/`<script>`）——自定义 SQL 一律放 `resources/mapper/XxxMapper.xml`（见 database-standards `mybatis-xml-standards.md`），SQL 散落 Java 注解无法统一审计/格式化/复用
+- ❌ 接口方法无实现且无注解/XML（运行期炸，编译不报错）——自查：方法必须由 BaseMapper 覆盖或 XML 实现
 - ❌ 自定义方法重复实现 BaseMapper 已有能力
 
 ## 反例 / 正例
 
 ```java
-// 反例：裸 #{0} + Map 返回
-@Select("SELECT * FROM t_order WHERE status = #{0} AND shop_id = #{1}")
-List<Map<String, Object>> list(Integer status, Long shopId);
-
-// 正例：@Param 命名 + VO 接收
+// 反例：注解 SQL 写在 Java 方法上（SQL 散落代码中，禁）
+@Select("SELECT * FROM t_order WHERE status = #{status} AND shop_id = #{shopId}")
 List<OrderVO> selectOrderVOList(@Param("status") Integer status,
                                 @Param("shopId") Long shopId);
+
+// 正例：接口只声明，SQL 在 resources/mapper/OrderMapper.xml
+List<OrderVO> selectOrderVOList(@Param("status") Integer status,
+                                @Param("shopId") Long shopId);
+```
+
+```xml
+<!-- resources/mapper/OrderMapper.xml -->
+<select id="selectOrderVOList" resultType="com.example.order.vo.OrderVO">
+    SELECT id, order_no, status
+    FROM t_order
+    WHERE status = #{status} AND shop_id = #{shopId}
+</select>
 ```
 
 ## 自检清单
@@ -75,4 +86,5 @@ List<OrderVO> selectOrderVOList(@Param("status") Integer status,
 - [ ] 分页参数 `Page<T> pageResult` 语义命名（非裸 `page`）
 - [ ] 无 Map 返回主结果
 - [ ] 无业务逻辑在 Mapper
-- [ ] 接口方法均有实现（注解/XML/BaseMapper）
+- [ ] 无注解 SQL（@Select/@Insert/@Update/@Delete/<script>），自定义 SQL 全部在 XML
+- [ ] 接口方法均由 BaseMapper 或 XML 实现，无空方法

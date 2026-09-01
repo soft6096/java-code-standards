@@ -116,6 +116,31 @@ public class PageQuery {
 }
 ```
 
+### 5. 接口文档注解（强制）
+
+- **每个 Controller 必带 OpenAPI 注解**（`@Tag`/`@Operation`），与 RESTful 设计同步生成，禁止无注解裸接口
+- 类级 `@Tag(name = "订单管理", description = "...")`，方法级 `@Operation(summary = "...", description = "...")`
+- 注解内容与路径/方法语义一致，禁止 `@Operation` 空壳或抄方法名
+- DTO/VO 字段配 `@Schema(description = "...")`（见 dto/vo 规范与 api-doc-standards.md）
+- 依赖与开关配置见 build-standards `dependency-standards.md`（springdoc-openapi/knife4j）与 api-doc-standards.md
+
+```java
+@Tag(name = "订单管理", description = "订单查询与操作")
+@RestController
+@RequestMapping("/api/orders")
+@RequiredArgsConstructor
+public class OrderController {
+
+    @Operation(summary = "创建订单", description = "创建订单，返回订单号")
+    @PostMapping
+    public Response<OrderVO> create(@Validated @RequestBody OrderCreateDTO createInfo) {
+        return Response.success(orderService.create(createInfo));
+    }
+}
+```
+
+- **每个 Controller 必带 `@Slf4j`**：请求入口记入参摘要（脱敏）+ 耗时，出口记结果（见 04-logging-standards.md）
+
 ## 反例 / 正例
 
 ```java
@@ -158,6 +183,8 @@ public Response<OrderVO> getById(@PathVariable Long id) {
 - [ ] RESTful 路径规范（kebab-case 连字符、弃用 /me 类缩写惯例）
 - [ ] 方法名业务语义（动词前缀 + 领域术语，无 me/info 类直译）
 - [ ] 入参 @Validated + 校验注解
+- [ ] 类有 @Tag、方法有 @Operation，无注解裸接口
+- [ ] 类有 @Slf4j，请求入口记入参摘要 + 耗时
 - [ ] 统一返回体为 `Response<T>`（非 R/Result/ApiResponse）
 - [ ] 无 try/catch 堆积
 - [ ] 无业务逻辑

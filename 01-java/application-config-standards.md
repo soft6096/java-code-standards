@@ -176,6 +176,21 @@ spring:
 - 密码/密钥/token：online 一律 `${ENV_VAR}`，无默认值（缺变量直接启动失败，防误用）
 - 本地开发允许 `:默认值` 形式（`${DB_HOST:127.0.0.1}`）
 
+### 6.5 日志配置（logging + logback-spring.xml）
+
+- **Appender 结构一律放 `resources/logback-spring.xml`**（控制台 + 滚动文件 + 环境级 level，见 04-logging-standards.md 与 04-templates/logback-spring.xml），`application.yml` 只配 level 覆盖与少量开关
+- `application.yml` 用 `logging.level` 按包/类调级别，业务包（`com.example`）显式声明级别，禁止不配（依赖默认 INFO）
+
+```yaml
+logging:
+  level:
+    root: info            # 全局兜底
+    com.example: debug    # dev 业务包 DEBUG；online 由 logback-spring.xml 压回 INFO
+    com.example.mapper: warn  # Mapper 层 SQL 日志过吵时单独压
+```
+
+- 敏感配置要求：日志不输出密码/密钥/token；打印大对象只记关键字段（见 04-logging-standards.md）
+
 ## 反例 / 正例
 
 ```yaml
@@ -208,6 +223,7 @@ spring:
 - [ ] HikariCP 池参数显式配置（非默认裸奔，禁止仅 url/username/password 三件套）
 - [ ] 有 Redis 使用 → commons-pool2 依赖 + lettuce.pool 配置齐全
 - [ ] 有 MQ → 生产者确认 + 手动 ACK + 重试上限齐全
+- [ ] logback-spring.xml 已提供（控制台 + 滚动文件 + 环境级 level），application.yml 有 logging.level 覆盖
 - [ ] online 无写死密码/密钥（全环境变量）
 - [ ] 无无效配置（未用的中间件不配置）
 - [ ] 实体有 `@TableField(fill=...)` → 项目已提供 MetaObjectHandler（见 entity-standards）

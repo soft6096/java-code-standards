@@ -84,16 +84,24 @@ private Order getOrderWithCheck(Long orderId) {
 - 库存/余额类写操作加乐观锁（版本号）或行锁，禁止无锁覆盖
 
 ```java
-// 正例：MyBatis-Plus 乐观锁
-@Update("UPDATE stock SET quantity = quantity - #{delta}, version = version + 1 " +
-        "WHERE id = #{id} AND version = #{version} AND quantity >= #{delta}")
-int deductStock(Long id, Integer delta, Integer version);
+// 正例：MyBatis-Plus 乐观锁（SQL 在 XML，接口只声明；禁注解 SQL）
+int deductStock(@Param("id") Long id, @Param("delta") Integer delta,
+                @Param("version") Integer version);
 
 // 调用处
 int rows = stockMapper.deductStock(stockId, delta, stock.getVersion());
 if (rows == 0) {
     throw new BusinessException(ErrorCode.STOCK_LOCKED, "库存不足或已变更，请重试");
 }
+```
+
+```xml
+<!-- resources/mapper/StockMapper.xml -->
+<update id="deductStock">
+    UPDATE stock
+    SET quantity = quantity - #{delta}, version = version + 1
+    WHERE id = #{id} AND version = #{version} AND quantity >= #{delta}
+</update>
 ```
 
 ## 反例 / 正例

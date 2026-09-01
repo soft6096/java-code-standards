@@ -72,14 +72,17 @@ public interface ProductMapper extends BaseMapper<Product> {
 ```java
 @Data
 public class ProductCreateDTO {
+    @Schema(description = "商品名称")
     @NotBlank(message = "商品名称不能为空")
     @Size(max = 64, message = "名称过长")
     private String name;
 
+    @Schema(description = "价格，单位：元")
     @NotNull(message = "价格不能为空")
     @DecimalMin(value = "0.01", message = "价格必须大于0")
     private BigDecimal price;
 
+    @Schema(description = "库存")
     @NotNull(message = "库存不能为空")
     @Min(value = 0, message = "库存不能为负")
     private Integer stock;
@@ -87,12 +90,15 @@ public class ProductCreateDTO {
 
 @Data
 public class ProductUpdateDTO {
+    @Schema(description = "名称")
     @Size(max = 64, message = "名称过长")
     private String name;
 
+    @Schema(description = "价格，单位：元")
     @DecimalMin(value = "0.01", message = "价格必须大于0")
     private BigDecimal price;
 
+    @Schema(description = "库存")
     @Min(value = 0, message = "库存不能为负")
     private Integer stock;
 }
@@ -103,13 +109,20 @@ public class ProductUpdateDTO {
 ```java
 @Data
 public class ProductVO {
+    @Schema(description = "主键 ID")
     private Long id;
+    @Schema(description = "商品编号")
     private String productNo;
+    @Schema(description = "商品名称")
     private String name;
+    @Schema(description = "价格，单位：元")
     private BigDecimal price;
+    @Schema(description = "库存")
     private Integer stock;
+    @Schema(description = "状态编码")
     private Integer status;
-    private String statusText;   // 由枚举填充
+    @Schema(description = "状态文案（由枚举填充）")
+    private String statusText;
 }
 ```
 
@@ -233,6 +246,8 @@ public class ProductServiceImpl implements ProductService {
 ## 8. Controller
 
 ```java
+@Tag(name = "商品管理", description = "商品的查询、创建、更新、删除")
+@Slf4j
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
@@ -241,16 +256,20 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @Operation(summary = "查询商品详情", description = "按 ID 查询商品")
     @GetMapping("/{id}")
     public Response<ProductVO> getById(@PathVariable @NotNull Long id) {
+        log.info("product getById start, id={}", id);
         return Response.success(productService.getById(id));
     }
 
+    @Operation(summary = "创建商品", description = "创建商品，返回商品 ID")
     @PostMapping
     public Response<Long> create(@Validated @RequestBody ProductCreateDTO createInfo) {
         return Response.success(productService.create(createInfo));
     }
 
+    @Operation(summary = "更新商品", description = "按 ID 更新商品")
     @PutMapping("/{id}")
     public Response<Void> update(@PathVariable Long id,
                                @Validated @RequestBody ProductUpdateDTO updateInfo) {
@@ -258,6 +277,7 @@ public class ProductController {
         return Response.success();
     }
 
+    @Operation(summary = "删除商品", description = "按 ID 删除商品")
     @DeleteMapping("/{id}")
     public Response<Void> delete(@PathVariable Long id) {
         productService.delete(id);
@@ -296,5 +316,6 @@ CREATE TABLE `t_product` (
 | 统一错误码 | BusinessException(ErrorCode.XXX, msg) |
 | MapStruct 转换 | ProductConverter，无手写 get/set |
 | 校验注解 | DTO 字段 @NotBlank/@DecimalMin/@Min |
-| 日志占位符 | log.info 带业务 ID |
+| OpenAPI 注解 | Controller @Tag/@Operation + DTO/VO 字段 @Schema（依赖 springdoc，见 build-standards） |
+| 日志占位符 | log.info 带业务 ID；全类 @Slf4j（Controller/ServiceImpl） |
 | 逻辑删除 | @TableLogic + deleted 列 |

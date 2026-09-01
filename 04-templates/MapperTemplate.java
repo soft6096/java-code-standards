@@ -12,7 +12,8 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface XxxMapper extends BaseMapper<Xxx> {
 
-    // 复杂查询方法在此声明，SQL 在 resources/mapper/XxxMapper.xml 中实现
+    // 复杂查询方法在此声明，SQL 一律在 resources/mapper/XxxMapper.xml 中实现
+    // 禁止注解 SQL（@Select/@Insert/@Update/@Delete/<script>）——SQL 必须收拢到 XML（见 database-standards）
     // 示例：
     // Page<Xxx> selectXxxPage(Page<Xxx> page, @Param("query") XxxQueryDTO xxxQuery);
 }

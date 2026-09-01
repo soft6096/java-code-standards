@@ -8,8 +8,10 @@
 
 ### 1. 框架与声明
 
-- 统一 SLF4J API，具体实现（Logback/Log4j2）由依赖决定
+- 统一 SLF4J API，具体实现默认 **Logback**（`spring-boot-starter-logging` 自带，随 `spring-boot-starter-web` 传递引入，无需额外加依赖）
+- **全类使用 `@Slf4j`**（Lombok）：Controller / Service / ServiceImpl / Job / Listener / MQ 消费类一律声明，禁止类内散落 `private static final Logger` 混用
 - 禁止直接使用 `System.out.println`、`System.err.println` 输出日志
+- 若改用 Log4j2：`spring-boot-starter` 需排除 `spring-boot-starter-logging` 并显式引入 Log4j2（见 build-standards 依赖规范），团队统一选一，禁止 Logback/Log4j2 并存
 
 ```java
 // 正例：Lombok 或手动声明
@@ -18,6 +20,33 @@ public class OrderService {
     // 直接使用 log 对象
 }
 ```
+
+### 1.5 Logback 配置（logback-spring.xml，强制）
+
+- **项目必须提供 `resources/logback-spring.xml`**，禁止依赖 Spring Boot 默认日志配置裸奔（默认只打控制台、无滚动、级别不可按环境区分）
+- 模板见 `04-templates/logback-spring.xml`，必含三件套：
+
+| 组件 | 要求 |
+|---|---|
+| 控制台 Appender（CONSOLE） | dev 环境全量输出（含 DEBUG），格式化含时间/级别/线程/logger/消息 |
+| 滚动文件 Appender（FILE） | 按天滚动 + 大小触发 + 保留天数（如 30 天）+ 单文件上限（如 100MB），生产日志必须落盘 |
+| 级别按环境分离 | `<springProfile name="dev">` 开 DEBUG，online 只 INFO/WARN/ERROR；错误单独滚到 error 文件可选 |
+
+```xml
+<!-- 最小骨架：控制台 + 滚动文件 + 环境级 level（完整模板见 04-templates/logback-spring.xml） -->
+<configuration>
+    <springProfile name="dev">
+        <logger name="com.example" level="DEBUG"/>
+    </springProfile>
+    <springProfile name="online">
+        <logger name="com.example" level="INFO"/>
+    </springProfile>
+    <!-- CONSOLE / FILE appender ... -->
+</configuration>
+```
+
+- `application.yml` 只配 `logging.level.*` 覆盖与 `logging.file` 无关项；Appender 结构一律在 logback-spring.xml（见 application-config-standards.md）
+- 文件名用 `logback-spring.xml` 而非 `logback.xml`（`-spring` 后缀才支持 `<springProfile>` 环境切换）
 
 ### 2. 日志级别选择
 
@@ -109,6 +138,8 @@ if (log.isDebugEnabled()) {
 ## 自检清单
 
 - [ ] 使用 SLF4J，无 System.out 日志
+- [ ] 全类 @Slf4j（Controller/Service/Job/Listener 一律带），无散落 Logger 声明
+- [ ] logback-spring.xml 已提供：控制台 + 滚动文件 + 环境级 level（非默认配置裸奔）
 - [ ] 级别选择正确（业务节点 INFO、异常 ERROR）
 - [ ] 占位符替代字符串拼接
 - [ ] 异常日志带堆栈

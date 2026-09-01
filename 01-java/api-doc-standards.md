@@ -10,6 +10,31 @@
 - 团队用 Apifox 时：Apifox 为接口文档事实源（在线协作/联调/Mock），OpenAPI 注解随代码维护供同步；knife4j 仅作离线导出备选
 - 存量项目已用 Apifox（不用 Swagger/knife4j）→ 以老项目约定为准（见 ai-dev-workflow 存量适配模式，规范仅兜底）
 
+## 依赖与启用配置（项目初始化必配，缺依赖注解不生效）
+
+- **依赖必须引入**（见 build-standards `dependency-standards.md` 接口文档依赖章节）：
+  - Spring Boot 3.x → `springdoc-openapi-starter-webmvc-ui`（注解 `@Tag`/`@Operation`/`@Schema` 来自 `io.swagger.v3.oas.annotations.*`）
+  - 团队要 knife4j 增强 UI（离线导出/权限/OpenAPI3 聚合）→ 再加 `knife4j-openapi3-jakarta-spring-boot-starter`，版本与 springdoc 对齐
+- **开关按环境配置**（`application.yml` + profile 覆盖）：dev/qa 开启，online 关闭（防接口信息泄露）
+
+```yaml
+# application.yml
+springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_ENABLED:true}   # dev/qa 开启
+  swagger-ui:
+    enabled: ${SPRINGDOC_ENABLED:true}
+
+# application-online.yml
+springdoc:
+  api-docs:
+    enabled: false                       # online 关闭
+  swagger-ui:
+    enabled: false
+```
+
+- 生成 Controller/DTO/VO 时注解必须与依赖配套；依赖未引入 → 先补依赖再写注解，禁止"注解写好但依赖缺失"（编译报错）
+
 ## 强制规则
 
 ### 1. 注解使用
@@ -78,9 +103,10 @@ public class OrderCreateDTO {
 
 ## 自检清单
 
+- [ ] springdoc/knife4j 依赖已引入（无依赖注解不生效）
+- [ ] 文档开关按环境配置（online 关闭）
 - [ ] 类/方法/字段有 OpenAPI 注解
 - [ ] 出入参用 DTO/VO，无 Entity 暴露
 - [ ] 注解与校验一致
 - [ ] 示例无敏感数据
-- [ ] 文档开关按环境配置
 - [ ] 破坏性变更已升版本，无静默改老接口

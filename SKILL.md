@@ -16,12 +16,12 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 任务类型 | 必读 | 建议读 |
 |---|---|---|
 | 任意 Java 代码 | `00-common/*`（4 份）+ comment-standards `standards/comment-standards.md` | - |
-| 写 Controller | `00-common/*` + `01-java/controller-standards.md` | validator / vo / dto |
+| 写 Controller | `00-common/*` + `01-java/controller-standards.md` + `01-java/api-doc-standards.md`（OpenAPI 注解强制） | validator / vo / dto |
 | 写 Service 接口 | `00-common/*` + `01-java/service-standards.md` | exception / enum |
 | 写 Service 实现 | `00-common/*` + `01-java/service-impl-standards.md` | exception / enum |
 | 写 Mapper | `00-common/*` + `01-java/mapper-standards.md`（接口结构） | database-standards `mybatis-plus/mapper-standards.md` |
 | 写 Entity | `00-common/*` + `01-java/entity-standards.md` | database-standards `table-design-standards.md` |
-| 写 DTO / VO | `00-common/*` + 对应类规范 | converter |
+| 写 DTO / VO | `00-common/*` + 对应类规范 + `01-java/api-doc-standards.md`（字段 @Schema 强制） | converter |
 | 写 Config / Utils / Enum / Constants 等 | `00-common/*` + 对应类规范 | - |
 | 写 application.yml / 配置文件 / 连接池 | `01-java/application-config-standards.md` | config-standards |
 | 生成项目脚手架 / 工程初始化（配置 + 公共组件） | build-standards + `01-java/application-config-standards.md` + `04-templates/`（ConfigTemplate / MyMetaObjectHandler） | database-standards `table-design-standards.md` |
@@ -60,9 +60,10 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 - Controller 不写 try/catch，全局处理器统一转换
 
 ### 日志（04-logging-standards.md）
-- SLF4J 占位符 `{}`，禁止字符串拼接与 System.out
+- SLF4J 占位符 `{}`，禁止字符串拼接与 System.out；全类 `@Slf4j`（Controller/Service/Job/Listener 一律带）
 - 异常日志带堆栈（最后参数传异常对象）
 - 关键日志带业务上下文 ID，禁敏感信息
+- **Logback 配置**：项目必须提供 `logback-spring.xml`（控制台 + 滚动文件 + 环境级 level 分离），禁止依赖默认配置裸奔（见 04-templates/logback-spring.xml）
 
 ### 注释（见 comment-standards skill）
 - 全量注释：所有类（DTO/VO/Config 等，仅示例非穷举）类注释写清职责、所有变量/字段注释写清含义
@@ -78,6 +79,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 ### 数据访问
 - SQL/表设计/索引/分页/MyBatis XML 规范见 **database-standards** skill，本 skill 只覆盖 Java 侧（Mapper 接口结构）
 - Mapper 接口：继承 `BaseMapper`，方法命名 select/insert/update/delete 前缀，多参数 `@Param`，禁 Map 返回
+- **自定义 SQL 一律放 XML**（`resources/mapper/XxxMapper.xml`），**禁止注解 SQL**（`@Select`/`@Insert`/`@Update`/`@Delete`/`<script>`）；接口方法无实现且无 XML/BaseMapper 覆盖 = 运行期炸
 - 批量操作 foreach 500~1000 一批，禁止循环单条
 - **自动填充**：实体 `@TableField(fill=...)` 必须配套项目级 `MetaObjectHandler`（见 04-templates/MyMetaObjectHandler.java），缺失插入报 `Column 'create_time' cannot be null`
 
