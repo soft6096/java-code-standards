@@ -57,19 +57,22 @@ public class OrderService {
 | 层 | 强制要求 | 示例 |
 | :--- | :--- | :--- |
 | 类 | 全类 `@Slf4j` | `@Slf4j public class XxxServiceImpl` |
-| **每个业务方法（public + private 抽取方法）** | **方法体内 ≥1 条日志**：入口记入参摘要（方法名 + 关键入参字段）/ 关键分支 / 结果返回前 | `log.info("queryOrderList start, userId={}, status={}", userId, status);` ... `log.info("queryOrderList done, size={}", list.size());` |
-| 方法内 ≥2 个业务阶段 | 每个阶段关键点有日志 | 校验后 / 调用外部前 / 状态变更后 |
-| 大段逻辑（≥10 行无日志） | **❌ 违规**——大段代码执行到哪一步不可知 | — |
+| **每个业务方法（public + private 抽取方法）** | **方法体内 ≥1 条 INFO/WARN/ERROR 业务日志**（`log.debug` **不算覆盖**——线上默认不输出，打 debug = 线上看不到，仅可作补充）：入口记入参摘要（方法名 + 关键入参字段）/ 关键分支 / 结果返回前 | `log.info("queryOrderList start, userId={}, status={}", userId, status);` ... `log.info("queryOrderList done, size={}", list.size());` |
+| 方法内 ≥2 个业务阶段 | 每个阶段关键点有 INFO 日志 | 校验后 / 调用外部前 / 状态变更后 |
+| 大段逻辑（≥10 行无 INFO/WARN/ERROR） | **❌ 违规**——大段代码执行到哪一步不可知 | — |
 | 异常处 | ERROR 带堆栈 | `log.error("createOrder failed, orderId={}", orderId, e);` |
+
+> [!IMPORTANT] debug 不算业务日志（防"打条 debug 冒充覆盖"）
+> **方法级日志的"≥1 条"指的是 INFO/WARN/ERROR**——`log.debug` 在 online 环境默认不输出，打 debug 等于线上零日志。判定规则：**方法体内无任何 INFO/WARN/ERROR 日志（即使有 debug）→ 视为零日志 ❌**。debug 仅允许作为 INFO 之外的补充（如循环内明细），不能替代业务日志。
 
 **豁免（只限以下，须注明原因，不静默跳过）**：
 - 纯 getter / setter / 单行透传（`return mapper.selectById(id);`）→ 可无日志（但方法 Javadoc 仍必须有）
 - 基类/公共组件的模板方法内已被子类日志覆盖的关键路径 → 可不重复打
 
-**反例（大段逻辑零日志——上线后无法排查）**：
+**反例（两种都要抓）**：
 
 ```java
-// ❌ 反例：方法体一堆逻辑，一条日志都没有
+// ❌ 反例 1：方法体一堆逻辑，一条日志都没有
 public PageResult<OrderVO> queryOrderList(OrderQueryDTO query) {
     SysUser user = userMapper.selectById(query.getUserId());
     if (user == null) { throw new BusinessException(...); }  // 异常没打日志？
@@ -78,7 +81,17 @@ public PageResult<OrderVO> queryOrderList(OrderQueryDTO query) {
     return PageResult.of(voList);                              // 返回了啥？
 }
 
-// ✅ 正例：入口 + 关键分支 + 结果 都有日志
+// ❌ 反例 2：开头一条 debug 敷衍，中间 20+ 行关键逻辑零 INFO/WARN/ERROR——"半覆盖"漏网形态
+private List<OrderVO> buildBuyNowItems(AppOrderConfirmReqDTO reqDTO) {
+    log.debug("读取立即购买商品项，itemCount={}", ...);   // debug 线上不输出，不算覆盖
+    if (reqDTO.getBuyNowItemList() == null || ...) { throw new BusinessException(...); }
+    List<String> spuCodes = reqDTO.getBuyNowItemList().stream()...collect(...);  // 大量查库/组装逻辑
+    Map<...> productMap = mapper.selectList(...)...;                             // 中间全程无 INFO
+    for (...) { ... items.add(item); }                                           // 执行到哪一步不可知
+    return items;
+}
+
+// ✅ 正例：入口 + 关键分支 + 结果 都有 INFO/WARN/ERROR
 public PageResult<OrderVO> queryOrderList(OrderQueryDTO query) {
     log.info("queryOrderList start, userId={}, status={}", query.getUserId(), query.getStatus());
     SysUser user = userMapper.selectById(query.getUserId());
@@ -94,7 +107,7 @@ public PageResult<OrderVO> queryOrderList(OrderQueryDTO query) {
 }
 ```
 
-> 抽取出来的 private 辅助方法（buildXxx / convertXxx / validateXxx 等）**同样要方法内 ≥1 条日志**——它们是 Controller/ServiceImpl 大方法被抽出来的执行块，零日志 = 这一段执行过程不可见。与代码注释同规则：**注释/日志都要求覆盖到所有代码，包括抽取方法**（见 comment-standards 全量注释 + 本规范方法级日志）。
+> 抽取出来的 private 辅助方法（buildXxx / convertXxx / validateXxx 等）**同样要方法内 ≥1 条 INFO/WARN/ERROR 日志**（debug 不算）——它们是 Controller/ServiceImpl 大方法被抽出来的执行块，零 INFO = 这一段执行过程线上不可见。与代码注释同规则：**注释/日志都要求覆盖到所有代码，包括抽取方法**（见 comment-standards 全量注释 + 本规范方法级日志）。
 
 ### 2. 日志级别选择
 
@@ -188,7 +201,7 @@ if (log.isDebugEnabled()) {
 - [ ] 使用 SLF4J，无 System.out 日志
 - [ ] 全类 @Slf4j（Controller/Service/Job/Listener 一律带），无散落 Logger 声明
 - [ ] logback-spring.xml 已提供：控制台 + 滚动文件 + 环境级 level（非默认配置裸奔）
-- [ ] **每个业务方法（public + private 抽取方法）方法体内 ≥1 条日志**（入口入参摘要 / 关键分支 / 结果）——大段逻辑（≥10 行）零日志 = ❌
+- [ ] **每个业务方法（public + private 抽取方法）方法体内 ≥1 条 INFO/WARN/ERROR 日志**（debug 不算覆盖）——大段逻辑（≥10 行）无 INFO/WARN/ERROR = ❌
 - [ ] 级别选择正确（业务节点 INFO、异常 ERROR）
 - [ ] 占位符替代字符串拼接
 - [ ] 异常日志带堆栈

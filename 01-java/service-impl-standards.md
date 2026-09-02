@@ -137,7 +137,7 @@ public void create(OrderCreateDTO createInfo) {
 - 复杂领域逻辑（价格计算、状态机）抽独立领域类，ServiceImpl 只做编排
 - 批量操作（> 100 条）用批量插入/更新（见 sql 规范），不循环单条
 - 幂等：重复提交场景用唯一键或幂等表防重
-- 日志（**方法级全覆盖，见 `00-common/04-logging-standards.md` §1.6**）：每个业务方法（含抽取的 private 辅助方法）方法体内 ≥1 条日志——入口记入参摘要（方法名 + 关键入参）、关键状态变更记 INFO、返回前记结果；大段逻辑（≥10 行）零日志 = 不合格
+- 日志（**方法级全覆盖，见 `00-common/04-logging-standards.md` §1.6**）：每个业务方法（含抽取的 private 辅助方法）方法体内 ≥1 条 INFO/WARN/ERROR 日志（**debug 不算**）——入口记入参摘要（方法名 + 关键入参）、关键状态变更记 INFO、返回前记结果；大段逻辑（≥10 行）无 INFO/WARN/ERROR = 不合格
 
 ## 性能优化建议
 
