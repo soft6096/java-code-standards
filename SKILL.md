@@ -1,6 +1,6 @@
 ---
 name: java-code-standards
-description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须使用本 skill；写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；写测试代码时加载 test-standards skill；构建配置（pom/依赖/模块）时加载 build-standards skill；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查。
+description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spring Boot + Spring + MyBatis-Plus 生态）。生成任意 Java 代码前必须加载本 skill——命名/分层/异常/日志/事务/注入/SQL/安全是硬性要求，生成物不符合即返工。写 Controller/Service/ServiceImpl/Mapper/Entity/DTO/VO/Config/Utils/Exception/Enum/Constants/Converter/Validator/Security/Listener/Job 等类时按生成目标加载 01-java 对应规范；代码注释规则见 comment-standards skill；涉及 SQL/表设计/索引/MyBatis XML/分页时加载 database-standards skill（通用 SQL + MyBatis-Plus 层）；写测试代码时加载 test-standards skill；构建配置（pom/依赖/模块）时加载 build-standards skill；性能敏感/并发/缓存代码加载 03-performance 规范；生成完整类时参考 04-templates 模板。触发场景：生成 Java 代码、写 Java 类、Spring Boot 接口、MyBatis-Plus Mapper、SQL/建表 DDL、分页查询、认证鉴权、定时任务、消息消费、代码规范审查。代码生成完成后的兜底核对见 check-standards skill（12 项 HIGH + 代码规范组 C1-C6）。
 ---
 
 # Java Code Standards
@@ -10,6 +10,14 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 ## 强制使用流程
 
 生成任何 Java 代码前，必须按「任务类型 → 加载矩阵」读取规范，生成后对照「自检清单」逐项核对。违反强制规则即返工。
+
+## 按需加载原则（硬规则：防止规范挤占编码上下文）
+
+- **精确到单文件加载**：按矩阵只读当前任务对应的规范文件（写 Controller 只读 `controller-standards.md` + `api-doc-standards.md`），**禁止把整个 `01-java/`、`04-templates/` 目录读一遍**
+- `00-common/*`（4 份）是唯一全量必读组；建议加载顺序：先 01-java 对应类规范（明确写什么），再 00-common（约束怎么写）
+- `04-templates/`：只读与当前生成类对应的**那一个**模板文件（如写 Service 实现只读 `ServiceImplTemplate.java`）——模板是骨架参考，不是必读全文
+- `05-examples/`（完整 CRUD 示例 321 行）：**仅首次搭建同类功能或不确定代码组织方式时读**，常规开发不加载
+- 一次编码会话叠加的规范总量应控制在 ~1500 行内；超出时优先保 `00-common` + 当前类规范，其余按矩阵延后
 
 ## 加载矩阵
 
@@ -38,7 +46,7 @@ description: Java 代码生成规范引擎，约束 AI 生成代码质量（Spri
 | 性能敏感代码 | `00-common/*` + `03-performance/performance-standards.md` | concurrency / caching |
 | 并发 / 锁 | `03-performance/concurrency-standards.md` | - |
 | 缓存 (Redis/Caffeine) | `03-performance/caching-standards.md` | - |
-| 生成完整类 | `00-common/*` + 01-java 对应规范 + `04-templates/` 对应模板 | `05-examples/` 对应示例 |
+| 生成完整类 | `00-common/*` + 01-java 对应规范 | `04-templates/` 对应**单个**模板文件（如 ServiceImplTemplate.java）、`05-examples/`（仅首次/不确定时） |
 
 ## 核心规范速查
 
