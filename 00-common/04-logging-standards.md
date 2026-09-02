@@ -48,6 +48,54 @@ public class OrderService {
 - `application.yml` 只配 `logging.level.*` 覆盖与 `logging.file` 无关项；Appender 结构一律在 logback-spring.xml（见 application-config-standards.md）
 - 文件名用 `logback-spring.xml` 而非 `logback.xml`（`-spring` 后缀才支持 `<springProfile>` 环境切换）
 
+### 1.6 方法级日志覆盖（强制——每个业务方法必须有日志，无豁免分层）
+
+> **为什么**：日志是"证据"——线上出问题要靠日志定位"这个请求发生了什么、走到哪一步、为什么失败"。方法体零日志 = 该方法的执行轨迹完全不可追踪。**日志必须覆盖到方法级，不是只打"关键节点"**：Controller/Service/ServiceImpl/Job/Listener 的每个业务方法（含抽取出来的 private 辅助方法）方法体内部必须有日志。
+
+**覆盖规则（无豁免分层，层层都要有）**：
+
+| 层 | 强制要求 | 示例 |
+| :--- | :--- | :--- |
+| 类 | 全类 `@Slf4j` | `@Slf4j public class XxxServiceImpl` |
+| **每个业务方法（public + private 抽取方法）** | **方法体内 ≥1 条日志**：入口记入参摘要（方法名 + 关键入参字段）/ 关键分支 / 结果返回前 | `log.info("queryOrderList start, userId={}, status={}", userId, status);` ... `log.info("queryOrderList done, size={}", list.size());` |
+| 方法内 ≥2 个业务阶段 | 每个阶段关键点有日志 | 校验后 / 调用外部前 / 状态变更后 |
+| 大段逻辑（≥10 行无日志） | **❌ 违规**——大段代码执行到哪一步不可知 | — |
+| 异常处 | ERROR 带堆栈 | `log.error("createOrder failed, orderId={}", orderId, e);` |
+
+**豁免（只限以下，须注明原因，不静默跳过）**：
+- 纯 getter / setter / 单行透传（`return mapper.selectById(id);`）→ 可无日志（但方法 Javadoc 仍必须有）
+- 基类/公共组件的模板方法内已被子类日志覆盖的关键路径 → 可不重复打
+
+**反例（大段逻辑零日志——上线后无法排查）**：
+
+```java
+// ❌ 反例：方法体一堆逻辑，一条日志都没有
+public PageResult<OrderVO> queryOrderList(OrderQueryDTO query) {
+    SysUser user = userMapper.selectById(query.getUserId());
+    if (user == null) { throw new BusinessException(...); }  // 异常没打日志？
+    List<Order> list = orderMapper.selectByCondition(...);    // 查了啥？
+    List<OrderVO> voList = list.stream().map(this::buildVO).toList();
+    return PageResult.of(voList);                              // 返回了啥？
+}
+
+// ✅ 正例：入口 + 关键分支 + 结果 都有日志
+public PageResult<OrderVO> queryOrderList(OrderQueryDTO query) {
+    log.info("queryOrderList start, userId={}, status={}", query.getUserId(), query.getStatus());
+    SysUser user = userMapper.selectById(query.getUserId());
+    if (user == null) {
+        log.warn("queryOrderList user not found, userId={}", query.getUserId());
+        throw new BusinessException(...);
+    }
+    List<Order> list = orderMapper.selectByCondition(query);
+    log.info("queryOrderList found, userId={}, count={}", query.getUserId(), list.size());
+    List<OrderVO> voList = list.stream().map(this::buildVO).toList();
+    log.info("queryOrderList done, userId={}, voCount={}", query.getUserId(), voList.size());
+    return PageResult.of(voList);
+}
+```
+
+> 抽取出来的 private 辅助方法（buildXxx / convertXxx / validateXxx 等）**同样要方法内 ≥1 条日志**——它们是 Controller/ServiceImpl 大方法被抽出来的执行块，零日志 = 这一段执行过程不可见。与代码注释同规则：**注释/日志都要求覆盖到所有代码，包括抽取方法**（见 comment-standards 全量注释 + 本规范方法级日志）。
+
 ### 2. 日志级别选择
 
 | 级别 | 用途 | 示例 |
@@ -140,6 +188,7 @@ if (log.isDebugEnabled()) {
 - [ ] 使用 SLF4J，无 System.out 日志
 - [ ] 全类 @Slf4j（Controller/Service/Job/Listener 一律带），无散落 Logger 声明
 - [ ] logback-spring.xml 已提供：控制台 + 滚动文件 + 环境级 level（非默认配置裸奔）
+- [ ] **每个业务方法（public + private 抽取方法）方法体内 ≥1 条日志**（入口入参摘要 / 关键分支 / 结果）——大段逻辑（≥10 行）零日志 = ❌
 - [ ] 级别选择正确（业务节点 INFO、异常 ERROR）
 - [ ] 占位符替代字符串拼接
 - [ ] 异常日志带堆栈
