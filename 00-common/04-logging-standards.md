@@ -134,7 +134,8 @@ log.info("order created, orderId=" + orderId + ", userId=" + userId);
 log.info("order created, orderId={}, userId={}", orderId, userId);
 ```
 
-- 占位符性能优势：参数不匹配时零开销；拼接则必然执行
+- 占位符避免字符串**拼接**开销（不拼成字符串）；但**参数表达式仍会先求值**（Java 方法参数 eager 求值）——`log.info("...{}", obj.getId())` 中 `obj.getId()` 在调用前必然执行，与日志级别是否输出无关。**禁止把可能 NPE 的调用写进日志参数**（见 §6「日志参数求值安全」）
+- 占位符参数传**已判空/安全取值**的变量或字面量；方法调用、链式取值先算到局部变量再传入
 
 ### 4. 异常日志
 
@@ -160,6 +161,38 @@ log.error("order submit failed, orderId={}", orderId, e);
 ```java
 // 正例：脱敏
 log.info("user login, userId={}, mobile={}", userId, MaskUtil.mask(mobile));
+```
+
+### 6. 日志参数求值安全（防 NPE，强制）
+
+> **为什么**：Java 方法参数 **eager 求值**——`log.debug("...{}", obj.getId())` 无论 debug 是否开启输出，`obj.getId()` 在调用前已执行。若调用者为 null、链式取值中间环为 null、集合空/越界 → **日志语句本身先 NPE**，判空写在其后也救不了（日志行先炸，代码走不到判空）。
+
+**禁止在日志参数中写可能 NPE 的表达式**（5 类高危形态）：
+
+| # | 高危形态 | ❌ 反例 | ✅ 正例 |
+| :---: | :--- | :--- | :--- |
+| 1 | **判空之前取值** | `log.debug("...parentId={}", parentCategory.getId()); if (parentCategory == null) return;` —— 日志行先 NPE，走不到判空 | 先判空再打，或判空后把值取到局部变量：`if (parentCategory == null) { log.warn("parentCategory is null, categoryId={}", categoryId); return; } log.debug("...parentId={}", parentCategory.getId());` |
+| 2 | **链式取值**（任一环可能 null） | `log.info("...{}", order.getUser().getName())`（order 或 getUser() 为 null → NPE） | 拆开判空：`User u = order == null ? null : order.getUser(); log.info("...userId={}", u == null ? null : u.getId());` 或只打已判空的首层：`log.info("...orderId={}", order == null ? null : order.getId())` |
+| 3 | **集合空/越界** | `log.info("...size={}, first={}", list.size(), list.get(0))`（空 list → get(0) 越界） | 先判非空再取：`log.info("...size={}", list == null ? 0 : list.size()); if (list != null && !list.isEmpty()) { log.info("...firstId={}", list.get(0).getId()); }` |
+| 4 | **Map 取值后调用** | `log.info("...{}", map.get(key).getName())`（value 为 null → NPE） | 先取再判：`User u = map.get(key); log.info("...{}", u == null ? null : u.getName());` |
+| 5 | **debug 昂贵参数**无开关 | `log.debug("...{}", JsonUtil.toJson(order))`（级别关也白白序列化；含 null 链同样炸） | `if (log.isDebugEnabled()) { log.debug("...{}", JsonUtil.toJson(order)); }`（开关内参数仅在开启时求值） |
+
+> [!IMPORTANT] 对象本身 null 是安全的，危险的是"调用" 
+> `log.info("user={}", user)`（user 为 null → 打 "null"，**安全**）；`log.info("userId={}", user.getId())`（user 为 null → **NPE**）。规则红线：**日志参数里不写方法调用/链式取值/集合索引**；要打就传**已判空后取到的局部变量**，或先判空、判空分支先打/return 再打。
+
+**通用写法模板**：
+
+```java
+// ✅ 安全模式 A：先判空，判空分支先记录并退出，再打正常日志
+if (parentCategory == null) {
+    log.warn("validateCategory skip, parentCategory is null, categoryId={}", categoryId);  // 只打已判空的参数
+    return;
+}
+log.debug("validateCategory path, categoryId={}, parentId={}", existingCategory.getId(), parentCategory.getId());  // 此刻调用者已确认非 null
+
+// ✅ 安全模式 B：null 安全取值到局部变量后再打（避免三目污染日志行）
+Long parentId = parentCategory == null ? null : parentCategory.getId();
+log.debug("validateCategory path, categoryId={}, parentId={}", existingCategory.getId(), parentId);
 ```
 
 ## 反例 / 正例
@@ -204,6 +237,7 @@ if (log.isDebugEnabled()) {
 - [ ] **每个业务方法（public + private 抽取方法）方法体内 ≥1 条 INFO/WARN/ERROR 日志**（debug 不算覆盖）——大段逻辑（≥10 行）无 INFO/WARN/ERROR = ❌
 - [ ] 级别选择正确（业务节点 INFO、异常 ERROR）
 - [ ] 占位符替代字符串拼接
+- [ ] **日志参数求值安全（§6）**：日志参数不写未判空对象的方法调用/链式取值/集合空索引（先判空或先取安全局部变量再打）；判空写日志行之前
 - [ ] 异常日志带堆栈
 - [ ] 关键日志含业务上下文 ID
 - [ ] 无敏感信息
