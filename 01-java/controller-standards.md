@@ -80,6 +80,7 @@ public Response<Void> deleteRole(@PathVariable Long roleId) { ... }
 - 入参对象用 `@Validated` + Bean Validation 注解
 - 简单参数用 `@RequestParam` / `@PathVariable` + `@NotNull` 等，Controller 类加 `@Validated` 生效
 - 校验注解写在 DTO 字段上，不写在 Controller 方法里做 if 判断
+- **校验 message 必须具体**（总规则见 validator-standards「0. message 规则」）：含业务字段名 + 具体原因（如"手机号不能为空"/"数量必须大于0"）；**禁止"参数不合法/参数错误/参数非法/数据不合法/输入有误"式无字段语义笼统文案**（前端原样展示，笼统文案让用户无法定位）
 
 ```java
 public class OrderCreateDTO {

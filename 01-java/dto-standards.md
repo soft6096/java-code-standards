@@ -68,7 +68,7 @@ public class OrderCreateDTO {
     private Long skuId;
     @Min(value = 1, message = "数量至少1")
     private Integer quantity;
-    @DecimalMin(value = "0.01", message = "金额非法")
+    @DecimalMin(value = "0.01", message = "金额必须大于0")
     private BigDecimal amount;
 }
 ```

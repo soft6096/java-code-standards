@@ -22,7 +22,7 @@ public class XxxCreateDTO {
     @Schema(description = "金额，单位：元")
     @NotNull(message = "金额不能为空")
     @DecimalMin(value = "0.01", message = "金额必须大于0")
-    @Digits(integer = 10, fraction = 2, message = "金额精度非法")
+    @Digits(integer = 10, fraction = 2, message = "金额最多2位小数")
     private BigDecimal amount;
 
     /** 状态：见 XxxStatusEnum */
