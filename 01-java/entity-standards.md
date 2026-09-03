@@ -11,6 +11,23 @@
 - Entity 与数据库表一一对应，字段名 = 列名下划线转驼峰
 - ❌ Entity 内放业务逻辑、校验注解、转换方法
 - ❌ Entity 直接返回给前端（接口出参用 VO）
+- **同表唯一映射（强制）**：**全项目一张表只允许一个 Entity 映射**（一个 `@TableName("x")`）。**新建 Entity 前先 `grep -rn '@TableName("该表名")' src/main/java` 全项目查重**——同表已有 Entity：
+  - 字段够用 → **直接复用/扩展已有 Entity**，禁止再造一个映射同表的新 Entity
+  - 字段不够/命名不符 → 扩展已有 Entity（同步 DDL），或在**确认旧 Entity 无业务引用后删除旧类**，再造新类；**禁止两 Entity 并存映射同表**（后台/前台各建一个、不同模块各建一个都是重复映射，字段增减双维护必漂移）
+  - 历史已存在的重复映射（存量项目）→ 列 `docs/0.5-存量代码扫描.md`（表→Entity 清单标注重复）→ 无引用类删除、双引用类收敛合并，见 legacy-onboarding 体检「数据基线」
+
+> [!CAUTION] 重复表映射的后果
+> 两个 Entity 映射同一张表（如 `MallProduct` 与 `MallServiceProduct` 都 `@TableName("mall_product")`），字段各自演化 → 双维护必漂移（一边加列另一边不知道）；同表两套 Mapper 查询口径不一；改表结构时漏改一个即运行期炸。**根因：建 Entity 前没查该表是否已有映射**——本规则把"先查重"设为强制动作。
+
+```java
+// ❌ 反例：两 Entity 映射同一张表（禁）
+@TableName("mall_product") public class MallProduct { ... }                    // 后台建
+@TableName("mall_product") public class MallServiceProduct { ... }             // 前台/Service 改造又建一个 → 重复映射
+
+// ✅ 正例：先查重，同表只留一个
+@TableName("mall_product") public class MallProduct { ... }                    // 唯一映射，前后台共用
+// 业务命名差异（spec_code vs combinationCode）→ 字段统一命名或经 @TableField("列名") 映射，不另建 Entity
+```
 
 ```java
 @TableName("t_order")
@@ -130,6 +147,7 @@ private LocalDateTime updateTime;
 ## 自检清单
 
 - [ ] 与表一一对应，字段类型正确
+- [ ] **同表唯一映射：建 Entity 前已 `grep @TableName("表名")` 全项目查重，无第二 Entity 映射同表**
 - [ ] 主键 ASSIGN_ID，非自增
 - [ ] 金额 BigDecimal，时间 LocalDateTime
 - [ ] 逻辑删除 @TableLogic，乐观锁 @Version（需要时）
